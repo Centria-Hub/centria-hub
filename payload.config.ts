@@ -3,6 +3,8 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
 
+import { migrations } from './migrations'
+
 export default buildConfig({
 	// If you'd like to use Rich Text, pass your editor here
 	editor: lexicalEditor(),
@@ -18,6 +20,8 @@ export default buildConfig({
 		pool: {
 			connectionString: process.env.DATABASE_URI ?? '',
 		},
+		prodMigrations: migrations,
+		migrationDir: './migrations',
 	}),
 	// If you want to resize images, crop, set focal point, etc.
 	// make sure to install it and pass it to the config.
