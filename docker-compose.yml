@@ -6,6 +6,7 @@ networks:
 
 services:
   payload:
+    container_name: centria-hub-front
     build:
       context: .
       dockerfile: Dockerfile
@@ -24,6 +25,7 @@ services:
     networks:
       - dev
     image: postgres:latest
+    container_name: centria-hub-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
