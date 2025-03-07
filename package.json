@@ -4,6 +4,8 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
+		"payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+		"ci": "payload migrate && yarn build",
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
