@@ -1,5 +1,3 @@
-version: '3'
-
 networks:
   dev:
     driver: bridge
@@ -16,25 +14,27 @@ services:
     ports:
       - '3000:3000'
     depends_on:
-      - postgres
+      - mongo
     env_file:
       - .env
 
-  postgres:
-    restart: always
+  mongo:
+    image: mongo:latest
+    container_name: centria-hub-db
     networks:
       - dev
-    image: postgres:latest
-    container_name: centria-hub-db
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '27017:27017'
+    command:
+      - --storageEngine=wiredTiger
+    volumes:
+      - data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    logging:
+      driver: none
 
 volumes:
   data:
-  pgdata:
