@@ -6,7 +6,7 @@ import { useState } from 'react'
 
 import { ArrowUpDown, Tag } from 'lucide-react'
 
-import { events } from '@/app/(front)/data/events'
+import { events } from '@/app/data/events'
 import DateFormat from '@/components/DateFormat'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
