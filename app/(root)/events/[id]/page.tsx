@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation'
 
 import { CalendarDays } from 'lucide-react'
 
-import { events } from '@/app/(front)/data/events'
+import { events } from '@/app/data/events'
 import DateFormat from '@/components/DateFormat'
 // Temporary implementation
 import { Badge } from '@/components/ui/badge'

@@ -1,11 +1,58 @@
-version: '3'
-
 networks:
   dev:
     driver: bridge
 
 services:
-  payload:
+  db:
+    container_name: centria-hub-db
+    image: "postgres:latest"
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dev
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  directus:
+    image: directus/directus:11.5.1
+    container_name: centria-hub-cms
+    ports:
+      - 8055:8055
+    volumes:
+      - ./database:/directus/database
+      - ./uploads:/directus/uploads
+      - ./extensions:/directus/extensions
+    environment:
+      SECRET: ${SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      DB_CLIENT: "pg"
+      DB_HOST: "db"
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      WEBSOCKETS_ENABLED: "true"
+    networks:
+      - dev
+    depends_on:
+      db:
+        condition: service_healthy
+
+  client:
     container_name: centria-hub-front
     build:
       context: .
@@ -14,27 +61,11 @@ services:
       - dev
     restart: always
     ports:
-      - '3000:3000'
+      - "3000:3000"
     depends_on:
-      - postgres
+      - directus
     env_file:
       - .env
 
-  postgres:
-    restart: always
-    networks:
-      - dev
-    image: postgres:latest
-    container_name: centria-hub-db
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
 volumes:
-  data:
   pgdata:
