@@ -38,7 +38,6 @@ services:
     environment:
       PUBLIC_URL: ${PUBLIC_URL}
       BACKEND_URL: ${BACKEND_URL}
-      API_PATH: /api
       SECRET: ${SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
