@@ -33,6 +33,8 @@ services:
       - ./database:/directus/database
       - ./uploads:/directus/uploads
       - ./extensions:/directus/extensions
+    ports:
+      - "8055:8055"
     environment:
       PUBLIC_URL: ${PUBLIC_URL}
       KEY: ${KEY}
