@@ -9,11 +9,11 @@ const nextConfig: NextConfig = {
 		return [
 			{
 				source: '/admin/:path*',
-				destination: '/admin/:path*', // Фейковий rewrite для блокування обробки /admin у Next
+				destination: '/admin/:path*',
 			},
 			{
 				source: '/:path*',
-				destination: '/:path*', // Дефолтний маршрут
+				destination: '/:path*',
 			},
 		]
 	},
