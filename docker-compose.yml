@@ -27,7 +27,7 @@ services:
         max-file: "3"
 
   directus:
-    image: directus/directus:11.5.1
+    image: directus/directus:latest
     container_name: centria-hub-cms
     volumes:
       - ./database:/directus/database
