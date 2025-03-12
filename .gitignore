@@ -42,5 +42,3 @@ next-env.d.ts
 
 # ide's
 .idea
-
-docker-compose.yml
