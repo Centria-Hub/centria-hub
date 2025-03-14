@@ -64,7 +64,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 
 			{/* Published Date & Tags */}
 			<div className='mb-5 flex flex-col gap-3 md:flex-row md:items-center'>
-				<p className='text-sm text-gray-500'>{newsData?.date_created}</p>
+				<p className='text-sm text-gray-500'>{newsData.news_name}</p>
 				<div className='flex flex-wrap gap-3'></div>
 			</div>
 
