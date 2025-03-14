@@ -1,10 +1,9 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { readItem } from '@directus/sdk'
 
-// Temporary implementation
+import DateFormat from '@/components/DateFormat'
 import { Badge } from '@/components/ui/badge'
 import {
 	Breadcrumb,
@@ -16,15 +15,6 @@ import {
 } from '@/components/ui/breadcrumb'
 import { buttonVariants } from '@/components/ui/button'
 import directus from '@/lib/directus'
-
-type NewsItem = {
-	id: number
-	name: string
-	thumbnail: string
-	posted_date: string
-	text: string
-	tags: string[]
-}
 
 const getNewsItem = async (id: number) => {
 	try {
@@ -61,15 +51,25 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 					</BreadcrumbItem>
 				</BreadcrumbList>
 			</Breadcrumb>
-
 			{/* Published Date & Tags */}
 			<div className='mb-5 flex flex-col gap-3 md:flex-row md:items-center'>
-				<p className='text-sm text-gray-500'>{newsData.news_name}</p>
-				<div className='flex flex-wrap gap-3'></div>
+				<p className='text-sm text-gray-500'>
+					{newsData.date_updated
+						? DateFormat(newsData.date_updated)
+						: DateFormat(newsData.date_created)}
+				</p>
+				<div className='flex flex-wrap gap-3'>
+					{newsData.news_tags?.map((tag: string) => (
+						<Badge key={tag} variant='outline' className='w-fit'>
+							{tag}
+						</Badge>
+					))}
+				</div>
 			</div>
-
 			{/* Title & Image & Text */}
-			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>{newsData.title}</h1>
+			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>
+				{newsData.news_name}
+			</h1>
 			<div className='mx-auto flex max-w-[50vw] justify-center'>
 				<img
 					src={`${process.env.PUBLIC_URL}/assets/${newsData.news_image}`}
@@ -79,8 +79,11 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 					className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
 				/>
 			</div>
-			<p className='mb-5 lg:mx-40 lg:text-lg'>{newsData.new_content}</p>
-
+			{/* <p className='mb-5 lg:mx-40 lg:text-lg'>{newsData.new_content}</p> */}
+			<div
+				dangerouslySetInnerHTML={{ __html: newsData.new_content }}
+				className='mb-5 lg:mx-40 lg:text-lg'
+			/>
 			{/* Back Button */}
 			<div className='flex justify-center'>
 				<Link
