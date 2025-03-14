@@ -96,7 +96,7 @@ const Page = () => {
 					</div>
 				</div>
 				{/* Tags */}
-				<div className=''>
+				<div>
 					<div className='mb-3 flex flex-row gap-1'>
 						<Tag />
 						<h1 className='font-bold'>Tags</h1>
