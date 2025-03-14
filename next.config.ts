@@ -5,6 +5,15 @@ const nextConfig: NextConfig = {
 	eslint: {
 		ignoreDuringBuilds: true,
 	},
+	images: {
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: 'api.hub.solo-web.studio',
+				pathname: '/assets/**',
+			},
+		],
+	},
 }
 
 export default nextConfig
