@@ -17,6 +17,8 @@ import {
 import { buttonVariants } from '@/components/ui/button'
 import directus from '@/lib/directus'
 
+export const dynamic = 'force-dynamic'
+
 type NewsItem = {
 	id: number
 	name: string
@@ -71,7 +73,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 			{/* Title & Image & Text */}
 			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>{newsData.title}</h1>
 			<div className='mx-auto flex max-w-[50vw] justify-center'>
-				<img
+				<Image
 					src={`${process.env.PUBLIC_URL}/assets/${newsData.news_image}`}
 					width={100}
 					height={100}
