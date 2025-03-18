@@ -2,14 +2,15 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { notFound } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
+import { readItems } from '@directus/sdk'
 import { ArrowUpDown, Tag } from 'lucide-react'
 
-import { news } from '@/app/data/news'
+import DateFormat from '@/components/DateFormat'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
-// Temporary implementation
 import {
 	Card,
 	CardContent,
@@ -34,12 +35,30 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select'
+import directus from '@/lib/directus'
 
 const Page = () => {
 	const [selectedTags, setSelectedTags] = useState<string[]>([])
 	const [selectedSort, setSelectedSort] = useState<string>()
 	const [currentPage, setCurrentPage] = useState<number>(1)
 	const itemsPerPage = 10
+	const [news, setNews] = useState<any[]>([])
+
+	useEffect(() => {
+		const getAllNews = async () => {
+			try {
+				const data = await directus.request(
+					readItems('news', {
+						filter: { status: { _eq: 'published' } },
+					})
+				)
+				setNews(data)
+			} catch {
+				notFound()
+			}
+		}
+		getAllNews()
+	}, [])
 
 	const tags = [
 		'engineering',
@@ -141,9 +160,9 @@ const Page = () => {
 					<Card key={item.id}>
 						<CardHeader className='md:h-1/3'>
 							<CardTitle>{item.title}</CardTitle>
-							<CardDescription>{item.posted_date}</CardDescription>
+							<CardDescription>{DateFormat(item.date_updated)}</CardDescription>
 							<div className='flex flex-wrap gap-3'>
-								{item.tags?.map(tag => (
+								{item.news_tags?.map((tag: string) => (
 									<Badge key={tag} variant='outline' className='w-fit'>
 										{tag}
 									</Badge>
@@ -152,7 +171,7 @@ const Page = () => {
 						</CardHeader>
 						<CardContent className='justify-content flex flex-col items-center md:h-1/3'>
 							<Image
-								src={item.thumbnail}
+								src={item.news_image}
 								alt={item.title}
 								width={200}
 								height={200}
@@ -161,9 +180,9 @@ const Page = () => {
 						</CardContent>
 						<CardFooter className='flex flex-col gap-5 md:h-1/3'>
 							<p className='mt-5'>
-								{item.text.length > 100
-									? `${item.text.substring(0, 100)}...`
-									: item.text}
+								{item.short_description.length > 100
+									? `${item.short_description.substring(0, 100)}...`
+									: item.short_description}
 							</p>
 							<Link
 								href={`/news/${item.id}`}

@@ -70,6 +70,9 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>
 				{newsData.news_name}
 			</h1>
+			<p className='mb-5 text-xl font-semibold md:text-2xl lg:mx-40'>
+				{newsData.short_description}
+			</p>
 			<div className='mx-auto flex max-w-[50vw] justify-center'>
 				<img
 					src={`${process.env.PUBLIC_URL}/assets/${newsData.news_image}`}
@@ -79,7 +82,6 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 					className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
 				/>
 			</div>
-			{/* <p className='mb-5 lg:mx-40 lg:text-lg'>{newsData.new_content}</p> */}
 			<div
 				dangerouslySetInnerHTML={{ __html: newsData.new_content }}
 				className='mb-5 lg:mx-40 lg:text-lg'
