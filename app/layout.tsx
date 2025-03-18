@@ -61,6 +61,13 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang='en'>
+			<head>
+				<script
+					defer
+					src='https://umami.hub.solo-web.studio/script.js'
+					data-website-id='f9046752-c0de-46cc-94ca-43f4162eb65b'
+				/>
+			</head>
 			<body className={nunito.variable}>{children}</body>
 		</html>
 	)
