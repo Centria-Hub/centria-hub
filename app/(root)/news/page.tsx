@@ -1,8 +1,6 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { readItems } from '@directus/sdk'
@@ -10,7 +8,7 @@ import { ArrowUpDown, Tag } from 'lucide-react'
 
 import DateFormat from '@/components/DateFormat'
 import { Badge } from '@/components/ui/badge'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import {
 	Card,
 	CardContent,
@@ -38,38 +36,52 @@ import {
 import directus from '@/lib/directus'
 
 const Page = () => {
-	const [selectedTags, setSelectedTags] = useState<string[]>([])
-	const [selectedSort, setSelectedSort] = useState<string>()
+	const [selectedTags, setSelectedTags] = useState<number[]>([])
+	const [selectedSort, setSelectedSort] = useState<string>('latest')
 	const [currentPage, setCurrentPage] = useState<number>(1)
 	const itemsPerPage = 10
 	const [news, setNews] = useState<any[]>([])
+	const [tags, setTags] = useState<any[]>([])
 
 	useEffect(() => {
-		const getAllNews = async () => {
+		const getAllNews = async (selectedSort: string, selectedTags: number[]) => {
+			const filter: any = { status: { _eq: 'published' } }
+			if (selectedTags.length > 0) {
+				filter.news_tags = { _in: selectedTags }
+			}
 			try {
 				const data = await directus.request(
 					readItems('news', {
-						filter: { status: { _eq: 'published' } },
+						filter,
+						sort: [
+							`${selectedSort == 'latest' ? '-date_updated' : 'date_updated'}`,
+						],
 					})
 				)
 				setNews(data)
-			} catch {
-				notFound()
+				setCurrentPage(1)
+			} catch (error) {
+				console.error('Failed to fetch news:', error)
+				setNews([])
 			}
 		}
-		getAllNews()
+		getAllNews(selectedSort, selectedTags)
+	}, [selectedSort, selectedTags])
+
+	useEffect(() => {
+		const getTags = async () => {
+			try {
+				const data = await directus.request(readItems('tags'))
+				setTags(data)
+			} catch (error) {
+				console.error('Failed to fetch tags:', error)
+				setTags([])
+			}
+		}
+		getTags()
 	}, [])
 
-	const tags = [
-		'engineering',
-		'music',
-		'business',
-		'healthcare',
-		'application',
-		'research and development',
-	]
-
-	const handleSelectedTags = (tag: string) => {
+	const handleSelectedTags = (tag: number) => {
 		if (selectedTags.includes(tag)) {
 			setSelectedTags(selectedTags.filter(selectedTag => selectedTag != tag))
 		} else {
@@ -106,12 +118,6 @@ const Page = () => {
 								</SelectItem>
 							</SelectContent>
 						</Select>
-						<Button
-							variant={'centriaRed'}
-							onClick={() => console.log('Selected Sort:', selectedSort)}
-						>
-							Sort
-						</Button>
 					</div>
 				</div>
 				{/* Tags */}
@@ -128,28 +134,20 @@ const Page = () => {
 							<SelectContent className='bg-white'>
 								{tags.map(tag => (
 									<div
-										key={tag}
-										onClick={() => handleSelectedTags(tag)}
+										key={tag.id}
+										onClick={() => handleSelectedTags(tag.id)}
 										className='cursor-pointer'
 									>
 										<Checkbox
-											checked={selectedTags.includes(tag)}
-											onCheckedChange={() => handleSelectedTags(tag)}
+											checked={selectedTags.includes(tag.id)}
+											onCheckedChange={() => handleSelectedTags(tag.id)}
 											className='mr-2'
 										/>
-										<span>
-											{tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()}
-										</span>
+										<span>{tag.tag}</span>
 									</div>
 								))}
 							</SelectContent>
 						</Select>
-						<Button
-							variant='centriaRed'
-							onClick={() => console.log('Selected Tags: ', selectedTags)}
-						>
-							Filter
-						</Button>
 					</div>
 				</div>
 			</div>
@@ -158,27 +156,34 @@ const Page = () => {
 			<div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3'>
 				{displayedNews.map(item => (
 					<Card key={item.id}>
-						<CardHeader className='md:h-1/3'>
-							<CardTitle>{item.title}</CardTitle>
-							<CardDescription>{DateFormat(item.date_updated)}</CardDescription>
+						<CardHeader className=''>
+							<CardTitle>{item.news_name}</CardTitle>
+							<CardDescription>
+								{item.date_updated
+									? DateFormat(item.date_updated)
+									: DateFormat(item.date_created)}
+							</CardDescription>
 							<div className='flex flex-wrap gap-3'>
-								{item.news_tags?.map((tag: string) => (
-									<Badge key={tag} variant='outline' className='w-fit'>
-										{tag}
-									</Badge>
-								))}
+								{item.news_tags?.map((tagId: number) => {
+									const tag = tags.find((t: any) => t.id === tagId)
+									return tag ? (
+										<Badge key={tag.id} variant='outline' className='w-fit'>
+											{tag.tag}
+										</Badge>
+									) : null
+								})}
 							</div>
 						</CardHeader>
-						<CardContent className='justify-content flex flex-col items-center md:h-1/3'>
-							<Image
-								src={item.news_image}
-								alt={item.title}
-								width={200}
-								height={200}
-								className='rounded-lg object-cover shadow-md md:h-full'
+						<CardContent className='justify-content flex flex-col items-center'>
+							<img
+								src={`${process.env.PUBLIC_URL}/assets/${item.news_image}`}
+								width={100}
+								height={50}
+								alt={item.news_name}
+								className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
 							/>
 						</CardContent>
-						<CardFooter className='flex flex-col gap-5 md:h-1/3'>
+						<CardFooter className='flex flex-col gap-5'>
 							<p className='mt-5'>
 								{item.short_description.length > 100
 									? `${item.short_description.substring(0, 100)}...`

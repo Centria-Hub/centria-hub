@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { readItem } from '@directus/sdk'
+import { readItem, readItems } from '@directus/sdk'
 
 import DateFormat from '@/components/DateFormat'
 import { Badge } from '@/components/ui/badge'
@@ -30,9 +30,19 @@ const getNewsItem = async (id: number) => {
 	}
 }
 
+const getTags = async () => {
+	try {
+		const data = await directus.request(readItems('tags'))
+		return data
+	} catch (error) {
+		console.error('Failed to fetch tags:', error)
+	}
+}
+
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const { id } = await params
 	const newsData = await getNewsItem(+id)
+	const tags = await getTags()
 
 	return (
 		<div className='mx-10 my-5 min-h-[100vh]'>
@@ -59,11 +69,14 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 						: DateFormat(newsData.date_created)}
 				</p>
 				<div className='flex flex-wrap gap-3'>
-					{newsData.news_tags?.map((tag: string) => (
-						<Badge key={tag} variant='outline' className='w-fit'>
-							{tag}
-						</Badge>
-					))}
+					{newsData.news_tags?.map((tagId: number) => {
+						const tag = tags?.find((t: any) => t.id === tagId)
+						return tag ? (
+							<Badge key={tag.id} variant='outline' className='w-fit'>
+								{tag.tag}
+							</Badge>
+						) : null
+					})}
 				</div>
 			</div>
 			{/* Title & Image & Text */}
