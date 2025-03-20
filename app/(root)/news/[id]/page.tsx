@@ -39,10 +39,22 @@ const getTags = async () => {
 	}
 }
 
-const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
+const Page = async ({
+	params,
+	searchParams,
+}: {
+	params: { id: string }
+	searchParams: Record<string, string>
+}) => {
 	const { id } = await params
 	const newsData = await getNewsItem(+id)
 	const tags = await getTags()
+
+	const queryString = new URLSearchParams(
+		Object.fromEntries(
+			Object.entries(searchParams).filter(([_, v]) => typeof v === 'string')
+		)
+	).toString()
 
 	return (
 		<div className='mx-10 my-5 min-h-[100vh]'>
@@ -102,7 +114,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 			{/* Back Button */}
 			<div className='flex justify-center'>
 				<Link
-					href='/news'
+					href={`/news${queryString ? `?${queryString}` : ''}`}
 					className={`${buttonVariants({ variant: 'centriaRed' })}`}
 				>
 					Back

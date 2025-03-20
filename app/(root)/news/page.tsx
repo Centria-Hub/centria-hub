@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { readItems } from '@directus/sdk'
@@ -36,13 +37,30 @@ import {
 import directus from '@/lib/directus'
 
 const Page = () => {
-	const [selectedTags, setSelectedTags] = useState<number[]>([])
-	const [selectedSort, setSelectedSort] = useState<string>('latest')
+	const router = useRouter()
+	const searchParams = useSearchParams()
+	const [selectedTags, setSelectedTags] = useState<number[]>(
+		searchParams.get('tags')
+			? searchParams.get('tags')!.split(',').map(Number)
+			: []
+	)
+	const [selectedSort, setSelectedSort] = useState<string>(
+		searchParams.get('sort') || 'latest'
+	)
 	const [currentPage, setCurrentPage] = useState<number>(1)
 	const itemsPerPage = 10
 	const [news, setNews] = useState<any[]>([])
 	const [tags, setTags] = useState<any[]>([])
 
+	// Update URL's query
+	const updatedURLParams = (sort: string, tags: number[]) => {
+		const params = new URLSearchParams()
+		params.set('sort', sort)
+		if (tags.length > 0) params.set('tags', tags.join(','))
+		router.push(`/news?${params.toString()}`, { scroll: false })
+	}
+
+	// Fetch News data
 	useEffect(() => {
 		const getAllNews = async (selectedSort: string, selectedTags: number[]) => {
 			const filter: any = { status: { _eq: 'published' } }
@@ -68,6 +86,7 @@ const Page = () => {
 		getAllNews(selectedSort, selectedTags)
 	}, [selectedSort, selectedTags])
 
+	// Fetch Tags data
 	useEffect(() => {
 		const getTags = async () => {
 			try {
@@ -81,14 +100,22 @@ const Page = () => {
 		getTags()
 	}, [])
 
+	// Handle filter
 	const handleSelectedTags = (tag: number) => {
-		if (selectedTags.includes(tag)) {
-			setSelectedTags(selectedTags.filter(selectedTag => selectedTag != tag))
-		} else {
-			setSelectedTags([...selectedTags, tag])
-		}
+		const newTags = selectedTags.includes(tag)
+			? selectedTags.filter(t => t !== tag)
+			: [...selectedTags, tag]
+		setSelectedTags(newTags)
+		updatedURLParams(selectedSort, newTags)
 	}
 
+	// Handle sort
+	const handleSortChange = (value: string) => {
+		setSelectedSort(value)
+		updatedURLParams(value, selectedTags)
+	}
+
+	// Pagination
 	const totalPages = Math.ceil(news.length / itemsPerPage)
 	const start = (currentPage - 1) * 10
 	const end = start + itemsPerPage
@@ -105,7 +132,7 @@ const Page = () => {
 						<h1 className='font-bold'>Sort</h1>
 					</div>
 					<div className='flex flex-row gap-3'>
-						<Select onValueChange={value => setSelectedSort(value)}>
+						<Select onValueChange={handleSortChange} value={selectedSort}>
 							<SelectTrigger className='w-[180px]'>
 								<SelectValue placeholder='Publication date' />
 							</SelectTrigger>
@@ -190,7 +217,7 @@ const Page = () => {
 									: item.short_description}
 							</p>
 							<Link
-								href={`/news/${item.id}`}
+								href={`/news/${item.id}?${searchParams.toString()}`}
 								className={`${buttonVariants({ variant: 'centriaRed_outline', size: 'lg' })}`}
 							>
 								Read More
