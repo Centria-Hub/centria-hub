@@ -50,11 +50,7 @@ const Page = async ({
 	const newsData = await getNewsItem(+id)
 	const tags = await getTags()
 
-	const queryString = new URLSearchParams(
-		Object.fromEntries(
-			Object.entries(searchParams).filter(([_, v]) => typeof v === 'string')
-		)
-	).toString()
+	const queryString = new URLSearchParams(await searchParams).toString()
 
 	return (
 		<div className='mx-10 my-5 min-h-[100vh]'>
