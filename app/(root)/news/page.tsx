@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
 
 import { readItems } from '@directus/sdk'
 import { useQuery } from '@tanstack/react-query'
@@ -58,19 +58,27 @@ const fetchTags = async () => {
 
 const Page = () => {
 	const router = useRouter()
-	const searchParams = useSearchParams()
-	// Get tag status from URL params
-	const [selectedTags, setSelectedTags] = useState<number[]>(
-		searchParams.get('tags')
-			? searchParams.get('tags')!.split(',').map(Number)
-			: []
-	)
-	// Get sort status from URL params
-	const [selectedSort, setSelectedSort] = useState<string>(
-		searchParams.get('sort') || 'latest'
-	)
+
+	// State for selected tags, sort and pagination
+	const [selectedTags, setSelectedTags] = useState<number[]>([])
+	const [selectedSort, setSelectedSort] = useState<string>('latest')
 	const [currentPage, setCurrentPage] = useState<number>(1)
 	const itemsPerPage = 10
+
+	// Handle URL query params (load from URL)
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search)
+
+		// Update state based on query params
+		const tagsParam = params.get('tags')
+		const sortParam = params.get('sort')
+		if (tagsParam) {
+			setSelectedTags(tagsParam.split(',').map(Number))
+		}
+		if (sortParam) {
+			setSelectedSort(sortParam)
+		}
+	}, [])
 
 	// Retreive news data using Tanstack query
 	const { data: news = [], isLoading: isLoadingNews } = useQuery({
@@ -86,9 +94,9 @@ const Page = () => {
 		staleTime: 1000 * 60 * 10, //10 mins cache
 	})
 
-	// Update URL's query params
-	const updatedURLParams = (params: Record<string, string | number>) => {
-		const newParams = new URLSearchParams(searchParams)
+	// Update URL query params
+	const updateURLParams = (params: Record<string, string | number>) => {
+		const newParams = new URLSearchParams(window.location.search)
 		Object.entries(params).forEach(([key, value]) => {
 			if (value) newParams.set(key, String(value))
 			else newParams.delete(key)
@@ -102,13 +110,13 @@ const Page = () => {
 			? selectedTags.filter(t => t !== tag)
 			: [...selectedTags, tag]
 		setSelectedTags(newTags)
-		updatedURLParams({ tags: newTags.join(',') })
+		updateURLParams({ tags: newTags.join(',') })
 	}
 
 	// Handle sort change
 	const handleSortChange = (value: string) => {
 		setSelectedSort(value)
-		updatedURLParams({ sort: value })
+		updateURLParams({ sort: value })
 	}
 
 	// Pagination
@@ -180,56 +188,58 @@ const Page = () => {
 			</div>
 
 			{/* News Cards */}
-			{isLoadingNews ? (
-				<p>Loading...</p>
-			) : (
-				<div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3'>
-					{displayedNews.map(item => (
-						<Card key={item.id}>
-							<CardHeader className=''>
-								<CardTitle>{item.news_name}</CardTitle>
-								<CardDescription>
-									{item.date_updated
-										? DateFormat(item.date_updated)
-										: DateFormat(item.date_created)}
-								</CardDescription>
-								<div className='flex flex-wrap gap-3'>
-									{item.news_tags?.map((tagId: number) => {
-										const tag = tags.find((t: any) => t.id === tagId)
-										return tag ? (
-											<Badge key={tag.id} variant='outline' className='w-fit'>
-												{tag.tag}
-											</Badge>
-										) : null
-									})}
-								</div>
-							</CardHeader>
-							<CardContent className='justify-content flex flex-col items-center'>
-								<img
-									src={`${process.env.PUBLIC_URL}/assets/${item.news_image}`}
-									width={100}
-									height={50}
-									alt={item.news_name}
-									className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
-								/>
-							</CardContent>
-							<CardFooter className='flex flex-col gap-5'>
-								<p className='mt-5'>
-									{item.short_description.length > 100
-										? `${item.short_description.substring(0, 100)}...`
-										: item.short_description}
-								</p>
-								<Link
-									href={`/news/${item.id}`}
-									className={`${buttonVariants({ variant: 'centriaRed_outline', size: 'lg' })}`}
-								>
-									Read More
-								</Link>
-							</CardFooter>
-						</Card>
-					))}
-				</div>
-			)}
+			<Suspense>
+				{isLoadingNews ? (
+					<p>Loading...</p>
+				) : (
+					<div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3'>
+						{displayedNews.map(item => (
+							<Card key={item.id}>
+								<CardHeader className=''>
+									<CardTitle>{item.news_name}</CardTitle>
+									<CardDescription>
+										{item.date_updated
+											? DateFormat(item.date_updated)
+											: DateFormat(item.date_created)}
+									</CardDescription>
+									<div className='flex flex-wrap gap-3'>
+										{item.news_tags?.map((tagId: number) => {
+											const tag = tags.find((t: any) => t.id === tagId)
+											return tag ? (
+												<Badge key={tag.id} variant='outline' className='w-fit'>
+													{tag.tag}
+												</Badge>
+											) : null
+										})}
+									</div>
+								</CardHeader>
+								<CardContent className='justify-content flex flex-col items-center'>
+									<img
+										src={`${process.env.PUBLIC_URL}/assets/${item.news_image}`}
+										width={100}
+										height={50}
+										alt={item.news_name}
+										className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
+									/>
+								</CardContent>
+								<CardFooter className='flex flex-col gap-5'>
+									<p className='mt-5'>
+										{item.short_description.length > 100
+											? `${item.short_description.substring(0, 100)}...`
+											: item.short_description}
+									</p>
+									<Link
+										href={`/news/${item.id}`}
+										className={`${buttonVariants({ variant: 'centriaRed_outline', size: 'lg' })}`}
+									>
+										Read More
+									</Link>
+								</CardFooter>
+							</Card>
+						))}
+					</div>
+				)}
+			</Suspense>
 
 			{/* Pagenation */}
 			<Pagination className='mt-5'>
