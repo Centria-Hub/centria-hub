@@ -43,8 +43,8 @@ const Page = async ({
 	params,
 	searchParams,
 }: {
-	params: { id: string }
-	searchParams: Record<string, string>
+	params: Promise<{ id: string }>
+	searchParams: Promise<Record<string, string>>
 }) => {
 	const { id } = await params
 	const newsData = await getNewsItem(+id)
