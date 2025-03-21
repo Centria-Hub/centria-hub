@@ -1,8 +1,8 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { readItem, readItems } from '@directus/sdk'
 
+import BackButton from '@/components/BackButton'
 import DateFormat from '@/components/DateFormat'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -13,7 +13,6 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { buttonVariants } from '@/components/ui/button'
 import directus from '@/lib/directus'
 
 const getNewsItem = async (id: number) => {
@@ -39,18 +38,10 @@ const getTags = async () => {
 	}
 }
 
-const Page = async ({
-	params,
-	searchParams,
-}: {
-	params: Promise<{ id: string }>
-	searchParams: Promise<Record<string, string>>
-}) => {
+const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const { id } = await params
 	const newsData = await getNewsItem(+id)
 	const tags = await getTags()
-
-	const queryString = new URLSearchParams(await searchParams).toString()
 
 	return (
 		<div className='mx-10 my-5 min-h-[100vh]'>
@@ -109,14 +100,10 @@ const Page = async ({
 			/>
 			{/* Back Button */}
 			<div className='flex justify-center'>
-				<Link
-					href={`/news${queryString ? `?${queryString}` : ''}`}
-					className={`${buttonVariants({ variant: 'centriaRed' })}`}
-				>
-					Back
-				</Link>
+				<BackButton />
 			</div>
 		</div>
 	)
 }
+
 export default Page
