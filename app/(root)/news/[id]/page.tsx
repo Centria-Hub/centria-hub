@@ -1,10 +1,9 @@
-import Image from 'next/image'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { readItem } from '@directus/sdk'
+import { readItem, readItems } from '@directus/sdk'
 
-// Temporary implementation
+import BackButton from '@/components/BackButton'
+import DateFormat from '@/components/DateFormat'
 import { Badge } from '@/components/ui/badge'
 import {
 	Breadcrumb,
@@ -14,17 +13,7 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { buttonVariants } from '@/components/ui/button'
 import directus from '@/lib/directus'
-
-type NewsItem = {
-	id: number
-	name: string
-	thumbnail: string
-	posted_date: string
-	text: string
-	tags: string[]
-}
 
 const getNewsItem = async (id: number) => {
 	try {
@@ -40,9 +29,19 @@ const getNewsItem = async (id: number) => {
 	}
 }
 
+const getTags = async () => {
+	try {
+		const data = await directus.request(readItems('tags'))
+		return data
+	} catch (error) {
+		console.error('Failed to fetch tags:', error)
+	}
+}
+
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const { id } = await params
 	const newsData = await getNewsItem(+id)
+	const tags = await getTags()
 
 	return (
 		<div className='mx-10 my-5 min-h-[100vh]'>
@@ -61,15 +60,31 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 					</BreadcrumbItem>
 				</BreadcrumbList>
 			</Breadcrumb>
-
 			{/* Published Date & Tags */}
 			<div className='mb-5 flex flex-col gap-3 md:flex-row md:items-center'>
-				<p className='text-sm text-gray-500'>{newsData.news_name}</p>
-				<div className='flex flex-wrap gap-3'></div>
+				<p className='text-sm text-gray-500'>
+					{newsData.date_updated
+						? DateFormat(newsData.date_updated)
+						: DateFormat(newsData.date_created)}
+				</p>
+				<div className='flex flex-wrap gap-3'>
+					{newsData.news_tags?.map((tagId: number) => {
+						const tag = tags?.find((t: any) => t.id === tagId)
+						return tag ? (
+							<Badge key={tag.id} variant='outline' className='w-fit'>
+								{tag.tag}
+							</Badge>
+						) : null
+					})}
+				</div>
 			</div>
-
 			{/* Title & Image & Text */}
-			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>{newsData.title}</h1>
+			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>
+				{newsData.news_name}
+			</h1>
+			<p className='mb-5 text-xl font-semibold md:text-2xl lg:mx-40'>
+				{newsData.short_description}
+			</p>
 			<div className='mx-auto flex max-w-[50vw] justify-center'>
 				<img
 					src={`${process.env.PUBLIC_URL}/assets/${newsData.news_image}`}
@@ -79,18 +94,16 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 					className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
 				/>
 			</div>
-			<p className='mb-5 lg:mx-40 lg:text-lg'>{newsData.new_content}</p>
-
+			<div
+				dangerouslySetInnerHTML={{ __html: newsData.new_content }}
+				className='mb-5 lg:mx-40 lg:text-lg'
+			/>
 			{/* Back Button */}
 			<div className='flex justify-center'>
-				<Link
-					href='/news'
-					className={`${buttonVariants({ variant: 'centriaRed' })}`}
-				>
-					Back
-				</Link>
+				<BackButton />
 			</div>
 		</div>
 	)
 }
+
 export default Page
