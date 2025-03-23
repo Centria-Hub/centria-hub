@@ -89,8 +89,9 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 			<div className='mx-auto flex max-w-[50vw] justify-center'>
 				<Image
 					src={`${process.env.PUBLIC_URL}/assets/${newsData.news_image}`}
-					width={100}
-					height={100}
+					quality={100}
+					width={1280}
+					height={768}
 					alt={newsData.news_name}
 					className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
 				/>

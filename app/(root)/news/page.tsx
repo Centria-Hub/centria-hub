@@ -217,8 +217,9 @@ const Page = () => {
 								<CardContent className='justify-content flex flex-col items-center'>
 									<Image
 										src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.news_image}`}
-										width={100}
-										height={50}
+										quality={100}
+										width={1280}
+										height={768}
 										alt={item.news_name}
 										className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
 									/>
