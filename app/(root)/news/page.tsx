@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
@@ -214,8 +215,8 @@ const Page = () => {
 									</div>
 								</CardHeader>
 								<CardContent className='justify-content flex flex-col items-center'>
-									<img
-										src={`${process.env.PUBLIC_URL}/assets/${item.news_image}`}
+									<Image
+										src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.news_image}`}
 										width={100}
 										height={50}
 										alt={item.news_name}

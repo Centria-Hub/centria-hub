@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 import { readItem, readItems } from '@directus/sdk'
@@ -86,7 +87,7 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 				{newsData.short_description}
 			</p>
 			<div className='mx-auto flex max-w-[50vw] justify-center'>
-				<img
+				<Image
 					src={`${process.env.PUBLIC_URL}/assets/${newsData.news_image}`}
 					width={100}
 					height={100}
