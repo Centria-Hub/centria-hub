@@ -43,9 +43,6 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const articleData = await getArticleItem(+id)
 	const tags = await getTags()
 
-	console.log('tags: ', tags)
-	console.log('articles_tags: ', articleData.article_tags)
-
 	return (
 		<div className='mx-10 my-5 min-h-[100vh]'>
 			<Breadcrumb className='mb-5'>

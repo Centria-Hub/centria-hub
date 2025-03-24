@@ -90,7 +90,6 @@ const Page = () => {
 		queryFn: fetchTags,
 		staleTime: 1000 * 60 * 10, //10 mins cache
 	})
-	console.log('tags: ', tags)
 
 	// Update URL query params
 	const updateURLParams = (params: Record<string, string | number>) => {
