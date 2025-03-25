@@ -1,14 +1,13 @@
-'use client'
-
 import Image from 'next/image'
-import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { notFound } from 'next/navigation'
 
-import { CalendarDays } from 'lucide-react'
+import { readItem, readItems } from '@directus/sdk'
+import { CalendarDays, Euro, MapPin } from 'lucide-react'
 
-import { events } from '@/app/data/events'
+import AddToCalender from '@/components/AddToCalender'
+import BackButton from '@/components/BackButton'
 import DateFormat from '@/components/DateFormat'
-// Temporary implementation
+import OpenMapButton from '@/components/OpenMapButton'
 import { Badge } from '@/components/ui/badge'
 import {
 	Breadcrumb,
@@ -18,42 +17,56 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { Button, buttonVariants } from '@/components/ui/button'
+import directus from '@/lib/directus'
+
+const getEventsItem = async (id: number) => {
+	try {
+		const post = (await directus.request(
+			readItem('events', id, {
+				fields: ['*'],
+			})
+		)) as EventItem
+		return post
+	} catch {
+		notFound()
+	}
+}
+
+const getTags = async () => {
+	try {
+		const data = await directus.request(readItems('tags_for_events'))
+		return data
+	} catch (error) {
+		console.error('Failed to fetch tags:', error)
+	}
+}
 
 type EventItem = {
 	id: number
 	title: string
-	thumbnail: string
-	posted_date: string
-	event_start_date: string
-	event_end_date: string
-	text: string
-	tags: string[]
+	event_image: string
+	date_created: string
+	date_updated: string
+	start_date: string
+	end_date: string
+	event_content: string
+	event_tags: number[]
+	location: Location
+	is_free: boolean
+	fee: string
+	short_description: string
+	location_address: string
 }
 
-function addToGoogleCalendar(event: EventItem) {
-	const title = encodeURIComponent(event.title)
-	const startDate = new Date(event.event_start_date)
-		.toISOString()
-		.replace(/-|:|\.\d+/g, '')
-	const endDate = new Date(event.event_end_date)
-		.toISOString()
-		.replace(/-|:|\.\d+/g, '')
-
-	const googleCalenderURL = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDate}/${endDate}`
-
-	window.open(googleCalenderURL, '_blank')
+type Location = {
+	type: string
+	coordinates: number[]
 }
 
-const Page = () => {
-	const { id } = useParams()
-	const eventData: EventItem | undefined = events.find(
-		item => item.id === Number(id)
-	)
-
-	if (!eventData) {
-		return <p>No Event Data.</p>
-	}
+const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
+	const { id } = await params
+	const eventData: EventItem | undefined = await getEventsItem(+id)
+	const tags = await getTags()
 
 	return (
 		<div className='mx-10 my-5 min-h-[100vh]'>
@@ -76,53 +89,77 @@ const Page = () => {
 			{/* Posted Date & Tags & AddToCalenderButton */}
 			<div className='mb-5 flex flex-col gap-3 md:flex-row md:items-center'>
 				<p className='text-sm text-gray-500'>
-					{DateFormat(eventData?.posted_date)}
+					{eventData.date_updated
+						? DateFormat(eventData.date_updated)
+						: DateFormat(eventData.date_created)}
 				</p>
 				<div className='flex flex-wrap gap-3'>
-					{eventData.tags?.map(tag => (
-						<Badge key={tag} variant='outline' className='w-fit'>
-							{tag}
-						</Badge>
-					))}
+					{eventData.event_tags?.map((tagId: number) => {
+						const tag = tags?.find((t: any) => t.id == tagId)
+						return tag ? (
+							<Badge key={tag.id} variant='outline' className='w-fit'>
+								{tag.tag}
+							</Badge>
+						) : null
+					})}
 				</div>
-				<Button
-					variant='centriaRed'
-					className='w-fit'
-					onClick={() => addToGoogleCalendar(eventData)}
-				>
-					Add to Calender
-				</Button>
+				<AddToCalender
+					title={eventData.title}
+					start_date={eventData.start_date}
+					end_date={eventData.end_date}
+					location_address={eventData.location_address}
+				/>
 			</div>
 
 			{/* Title & Event Date & Image & Text */}
 			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>{eventData.title}</h1>
-			<div className='flex flex-row gap-3'>
-				<CalendarDays />
-				<h1 className='mb-5 text-sm font-bold md:text-xl'>
-					{eventData.event_start_date === eventData.event_end_date
-						? `${DateFormat(eventData.event_start_date)}`
-						: `${DateFormat(eventData.event_start_date)} - ${DateFormat(eventData.event_end_date)}`}
-				</h1>
+			<div className='mb-5 flex flex-col gap-3'>
+				<div className='flex flex-row gap-3'>
+					<CalendarDays />
+					<h1 className='text-sm font-bold md:text-xl'>
+						{!eventData.end_date
+							? `${DateFormat(eventData.start_date)}`
+							: `${DateFormat(eventData.start_date)} - ${DateFormat(eventData.end_date)}`}
+					</h1>
+				</div>
+				<div className='flex flex-row gap-3'>
+					<Euro />
+					{eventData.is_free ? (
+						<h1 className='text-sm font-bold md:text-xl'>Free</h1>
+					) : (
+						<h1 className='text-sm font-bold md:text-xl'>{eventData.fee}</h1>
+					)}
+				</div>
+				{eventData.location_address ? (
+					<div className='flex flex-row flex-wrap items-center gap-3 overflow-visible'>
+						<MapPin />
+						<h1 className='text-sm font-bold md:text-xl'>
+							{eventData.location_address}
+						</h1>
+						<OpenMapButton location_address={eventData.location_address} />
+					</div>
+				) : null}
 			</div>
+			<p className='mb-5 text-xl font-semibold md:text-2xl lg:mx-40'>
+				{eventData.short_description}
+			</p>
 			<div className='mx-auto flex max-w-[50vw] justify-center'>
 				<Image
-					src={eventData.thumbnail}
-					alt={eventData.title}
-					width={600}
-					height={400}
+					src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${eventData.event_image}`}
+					quality={100}
+					width={1280}
+					height={768}
+					alt={eventData.event_image}
 					className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
 				/>
 			</div>
-			<p className='mb-5 lg:mx-40 lg:text-lg'>{eventData.text}</p>
-
+			<div
+				dangerouslySetInnerHTML={{ __html: eventData.event_content }}
+				className='mb-5 lg:mx-40 lg:text-lg'
+			/>
 			{/* Back Button */}
 			<div className='flex justify-center'>
-				<Link
-					href='/events'
-					className={`${buttonVariants({ variant: 'centriaRed' })}`}
-				>
-					Back
-				</Link>
+				<BackButton />
 			</div>
 		</div>
 	)
