@@ -1,12 +1,10 @@
-'use client'
-
 import Image from 'next/image'
-import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { notFound } from 'next/navigation'
 
-import { articles } from '@/app/data/articles'
+import { readItem, readItems } from '@directus/sdk'
+
+import BackButton from '@/components/BackButton'
 import DateFormat from '@/components/DateFormat'
-// Temporary implementation
 import { Badge } from '@/components/ui/badge'
 import {
 	Breadcrumb,
@@ -16,26 +14,34 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { buttonVariants } from '@/components/ui/button'
+import directus from '@/lib/directus'
 
-type ArticleItem = {
-	id: number
-	title: string
-	thumbnail: string
-	posted_date: string
-	text: string
-	tags: string[]
+const getArticleItem = async (id: number) => {
+	try {
+		const post = await directus.request(
+			readItem('article', id, {
+				fields: ['*'],
+			})
+		)
+		return post
+	} catch {
+		notFound()
+	}
 }
 
-const Page = () => {
-	const { id } = useParams()
-	const articleData: ArticleItem | undefined = articles.find(
-		item => item.id === Number(id)
-	)
-
-	if (!articleData) {
-		return <p>No Event Data.</p>
+const getTags = async () => {
+	try {
+		const data = await directus.request(readItems('tags_for_articles'))
+		return data
+	} catch (error) {
+		console.error('Failed to fetch tags:', error)
 	}
+}
+
+const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
+	const { id } = await params
+	const articleData = await getArticleItem(+id)
+	const tags = await getTags()
 
 	return (
 		<div className='mx-10 my-5 min-h-[100vh]'>
@@ -58,14 +64,19 @@ const Page = () => {
 			{/* Published Date & Tags */}
 			<div className='mb-5 flex flex-col gap-3 md:flex-row md:items-center'>
 				<p className='text-sm text-gray-500'>
-					{DateFormat(articleData?.posted_date)}
+					{articleData.date_updated
+						? DateFormat(articleData.date_updated)
+						: DateFormat(articleData.date_created)}
 				</p>
 				<div className='flex flex-wrap gap-3'>
-					{articleData.tags?.map(tag => (
-						<Badge key={tag} variant='outline' className='w-fit'>
-							{tag}
-						</Badge>
-					))}
+					{articleData.article_tags?.map((tagId: number) => {
+						const tag = tags?.find((t: any) => t.id === tagId)
+						return tag ? (
+							<Badge key={tag.id} variant='outline' className='w-fit'>
+								{tag.name}
+							</Badge>
+						) : null
+					})}
 				</div>
 			</div>
 
@@ -73,25 +84,27 @@ const Page = () => {
 			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>
 				{articleData.title}
 			</h1>
+			<p className='mb-5 text-xl font-semibold md:text-2xl lg:mx-40'>
+				{articleData.short_description}
+			</p>
 			<div className='mx-auto flex max-w-[50vw] justify-center'>
 				<Image
-					src={articleData.thumbnail}
+					src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${articleData.article_image}`}
+					quality={100}
+					width={1280}
+					height={768}
 					alt={articleData.title}
-					width={600}
-					height={400}
 					className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
 				/>
 			</div>
-			<p className='mb-5 lg:mx-40 lg:text-lg'>{articleData.text}</p>
+			<div
+				dangerouslySetInnerHTML={{ __html: articleData.article_content }}
+				className='mb-5 lg:mx-40 lg:text-lg'
+			/>
 
 			{/* Back Button */}
 			<div className='flex justify-center'>
-				<Link
-					href='/articles'
-					className={`${buttonVariants({ variant: 'centriaRed' })}`}
-				>
-					Back
-				</Link>
+				<BackButton />
 			</div>
 		</div>
 	)
