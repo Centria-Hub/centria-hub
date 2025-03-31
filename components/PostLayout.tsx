@@ -43,7 +43,7 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 			<Breadcrumb className='mb-5'>
 				<BreadcrumbList>
 					<BreadcrumbItem>
-						<BreadcrumbLink href='/public'>Home</BreadcrumbLink>
+						<BreadcrumbLink href='/'>Home</BreadcrumbLink>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
@@ -56,7 +56,7 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 				</BreadcrumbList>
 			</Breadcrumb>
 
-			{/* Posted Date & Tags & AddToCalenderButton */}
+			{/* Posted Date & Tags */}
 			<div className='mb-5 flex flex-col gap-3 md:flex-row md:items-center'>
 				<p className='text-sm text-gray-500'>
 					{data.date_updated
@@ -73,29 +73,27 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 						) : null
 					})}
 				</div>
-				{type === 'event' ? (
-					<AddToCalender
-						title={data.title}
-						start_date={data.start_date}
-						end_date={data.end_date}
-						location_address={data.location_address}
-					/>
-				) : null}
 			</div>
 
-			{/* Title & Event Date & Image & Text */}
+			{/* Title & Event Date & Location */}
 			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>
 				{data[titleField]}
 			</h1>
 			{type === 'event' ? (
 				<div className='mb-5 flex flex-col gap-3'>
-					<div className='flex flex-row gap-3'>
+					<div className='flex flex-row items-center gap-3'>
 						<CalendarDays />
 						<h1 className='text-sm font-bold md:text-xl'>
 							{!data.end_date
 								? `${DateFormat(data.start_date)}`
 								: `${DateFormat(data.start_date)} - ${DateFormat(data.end_date)}`}
 						</h1>
+						<AddToCalender
+							title={data.title}
+							start_date={data.start_date}
+							end_date={data.end_date}
+							location_address={data.location_address}
+						/>
 					</div>
 					<div className='flex flex-row gap-3'>
 						<Euro />
@@ -116,6 +114,7 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 					) : null}
 				</div>
 			) : null}
+			{/* Description & Image & Contents */}
 			<p className='mb-5 text-xl font-semibold md:text-2xl lg:mx-40'>
 				{data.short_description}
 			</p>

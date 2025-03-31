@@ -100,7 +100,7 @@ const Page = () => {
 	const displayedNews = news.slice(start, end)
 
 	return (
-		<div className='mx-10 my-5'>
+		<div className='mx-10 my-5 flex min-h-[80vh] flex-col'>
 			{/* Filter */}
 			<Filter
 				handleSortChange={handleSortChange}
