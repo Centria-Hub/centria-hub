@@ -1,42 +1,14 @@
 'use client'
 
-import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Suspense, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { readItems } from '@directus/sdk'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowUpDown, Tag } from 'lucide-react'
 
-import DateFormat from '@/components/DateFormat'
-import { Badge } from '@/components/ui/badge'
-import { buttonVariants } from '@/components/ui/button'
-// Temporary implementation
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-	Pagination,
-	PaginationContent,
-	PaginationItem,
-	PaginationLink,
-	PaginationNext,
-	PaginationPrevious,
-} from '@/components/ui/pagination'
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select'
+import { DisplayItems } from '@/components/DisplayItems'
+import Filter from '@/components/Filter'
+import PaginationLayout from '@/components/PaginationLayout'
 import directus from '@/lib/directus'
 
 // Fetch events data
@@ -50,34 +22,12 @@ const fetchEvents = async (sort: string, tags: number[]) => {
 			filter,
 			sort: [`${sort == 'latest' ? '-start_date' : 'start_date'}`],
 		})
-	) as Promise<EventItem[]>
+	)
 }
 
 // Fetch tags data
 const fetchTags = async () => {
 	return directus.request(readItems('tags_for_events'))
-}
-
-type EventItem = {
-	id: number
-	title: string
-	event_image: string
-	date_created: string
-	date_updated: string
-	start_date: string
-	end_date: string
-	event_content: string
-	event_tags: number[]
-	location: Location
-	is_free: boolean
-	fee: string
-	short_description: string
-	location_address: string
-}
-
-type Location = {
-	type: string
-	coordinates: number[]
 }
 
 const Page = () => {
@@ -147,150 +97,29 @@ const Page = () => {
 	return (
 		<div className='mx-10 my-5'>
 			{/* Filter */}
-			<div className='flex flex-col gap-5 md:flex-row'>
-				{/* Sort */}
-				<div>
-					<div className='mb-3 flex flex-row gap-1'>
-						<ArrowUpDown />
-						<h1 className='font-bold'>Sort</h1>
-					</div>
-					<div className='flex flex-row gap-3'>
-						<Select onValueChange={handleSortChange} value={selectedSort}>
-							<SelectTrigger className='w-[180px]'>
-								<SelectValue placeholder='Event date' />
-							</SelectTrigger>
-							<SelectContent className='bg-white'>
-								<SelectItem value='latest' className='cursor-pointer'>
-									Latest
-								</SelectItem>
-								<SelectItem value='oldest' className='cursor-pointer'>
-									Oldest
-								</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-				</div>
-				{/* Tags */}
-				<div className=''>
-					<div className='mb-3 flex flex-row gap-1'>
-						<Tag />
-						<h1 className='font-bold'>Tags</h1>
-					</div>
-					<div className='flex flex-wrap gap-3 pb-5'>
-						{isLoadingTags ? (
-							<p>Loading...</p>
-						) : (
-							<Select>
-								<SelectTrigger className='w-[180px]'>
-									<SelectValue placeholder='Select Tags' />
-								</SelectTrigger>
-								<SelectContent className='bg-white'>
-									{tags.map(tag => (
-										<div
-											key={tag.id}
-											onClick={() => handleSelectedTags(tag.id)}
-											className='cursor-pointer'
-										>
-											<Checkbox
-												checked={selectedTags.includes(tag.id)}
-												onCheckedChange={() => handleSelectedTags(tag.id)}
-												className='mr-2'
-											/>
-											<span>{tag.tag}</span>
-										</div>
-									))}
-								</SelectContent>
-							</Select>
-						)}
-					</div>
-				</div>
-			</div>
+			<Filter
+				handleSortChange={handleSortChange}
+				selectedSort={selectedSort}
+				isLoadingTags={isLoadingTags}
+				tags={tags}
+				handleSelectedTags={handleSelectedTags}
+				selectedTags={selectedTags}
+			/>
 
 			{/* Event Cards */}
-			<Suspense>
-				{isLoadingEvents ? (
-					<p>Loading...</p>
-				) : (
-					<div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3'>
-						{displayedEvents.map(item => (
-							<Card key={item.id}>
-								<CardHeader className=''>
-									<CardTitle>{item.title}</CardTitle>
-									<CardDescription>
-										{!item.end_date
-											? DateFormat(item.start_date)
-											: `${DateFormat(item.start_date)} - ${DateFormat(item.end_date)}`}
-									</CardDescription>
-									<div className='flex flex-wrap gap-3'>
-										{item.event_tags?.map((tagId: number) => {
-											const tag = tags.find((t: any) => t.id === tagId)
-											return tag ? (
-												<Badge key={tag.id} variant='outline' className='w-fit'>
-													{tag.tag}
-												</Badge>
-											) : null
-										})}
-									</div>
-								</CardHeader>
-								<CardContent className='justify-content flex flex-col items-center'>
-									<Image
-										src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.event_image}`}
-										quality={100}
-										width={1280}
-										height={768}
-										alt={item.title}
-										className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
-									/>
-								</CardContent>
-								<CardFooter className='flex flex-col gap-5'>
-									<p className='mt-5'>
-										{item.short_description.length > 100
-											? `${item.short_description.substring(0, 100)}...`
-											: item.short_description}
-									</p>
-									<Link
-										href={`/events/${item.id}`}
-										className={`${buttonVariants({ variant: 'centriaRed_outline', size: 'lg' })}`}
-									>
-										Read More
-									</Link>
-								</CardFooter>
-							</Card>
-						))}
-					</div>
-				)}
-			</Suspense>
+			<DisplayItems
+				type='event'
+				isLoading={isLoadingEvents}
+				displayedItems={displayedEvents}
+				tags={tags}
+			/>
 
 			{/* Pagenation */}
-			<Pagination className='mt-5'>
-				<PaginationContent>
-					<PaginationItem>
-						<PaginationPrevious
-							className={`${currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-							onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-						/>
-					</PaginationItem>
-					{/* Page Number */}
-					{[...Array(totalPages)].map((_, index) => (
-						<PaginationItem key={index} className='cursor-pointer'>
-							<PaginationLink
-								isActive={currentPage === index + 1}
-								onClick={() => setCurrentPage(index + 1)}
-							>
-								{index + 1}
-							</PaginationLink>
-						</PaginationItem>
-					))}
-					<PaginationItem>
-						<PaginationNext
-							className={`${currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-							onClick={() =>
-								setCurrentPage(prev => Math.min(prev + 1, totalPages))
-							}
-						/>
-					</PaginationItem>
-				</PaginationContent>
-			</Pagination>
+			<PaginationLayout
+				currentPage={currentPage}
+				setCurrentPage={setCurrentPage}
+				totalPages={totalPages}
+			/>
 		</div>
 	)
 }
