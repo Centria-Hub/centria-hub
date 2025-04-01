@@ -17,11 +17,15 @@ import {
 const ItemCard = ({
 	type,
 	item,
-	tags,
+	tags_for_post,
+	post_tags_for_post,
+	tagsForPostIdField,
 }: {
 	type: 'news' | 'event' | 'article'
 	item: any
-	tags: any
+	tags_for_post: any
+	post_tags_for_post: any
+	tagsForPostIdField: string
 }) => {
 	const getDate = () => {
 		if (type === 'event') {
@@ -36,7 +40,10 @@ const ItemCard = ({
 
 	const renderTags = (tagIds: number[] = []) => {
 		return tagIds.map((tagId: number) => {
-			const tag = tags.find((t: any) => t.id === tagId)
+			const data = post_tags_for_post.find((t: any) => t.id === tagId)
+			const tag = tags_for_post.find(
+				(t: any) => t.id === data[tagsForPostIdField]
+			)
 			return tag ? (
 				<Badge key={tag.id} variant='outline' className='w-fit'>
 					{type === 'article' ? tag.name : tag.tag}
@@ -124,12 +131,16 @@ export const DisplayItems = ({
 	type,
 	isLoading,
 	displayedItems,
-	tags,
+	tags_for_post,
+	post_tags_for_post,
+	tagsForPostIdField,
 }: {
 	type: 'news' | 'event' | 'article'
 	isLoading: boolean
 	displayedItems: any[]
-	tags: any
+	tags_for_post: any
+	post_tags_for_post: any
+	tagsForPostIdField: string
 }) => {
 	if (type === 'article') {
 		return (
@@ -139,7 +150,14 @@ export const DisplayItems = ({
 				) : (
 					<div className='grid grid-cols-1 gap-5'>
 						{displayedItems.map(item => (
-							<ItemCard key={item.id} type={type} item={item} tags={tags} />
+							<ItemCard
+								key={item.id}
+								type={type}
+								item={item}
+								tags_for_post={tags_for_post}
+								post_tags_for_post={post_tags_for_post}
+								tagsForPostIdField={tagsForPostIdField}
+							/>
 						))}
 					</div>
 				)}
@@ -154,7 +172,14 @@ export const DisplayItems = ({
 				) : (
 					<div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3'>
 						{displayedItems.map(item => (
-							<ItemCard key={item.id} type={type} item={item} tags={tags} />
+							<ItemCard
+								key={item.id}
+								type={type}
+								item={item}
+								tags_for_post={tags_for_post}
+								post_tags_for_post={post_tags_for_post}
+								tagsForPostIdField={tagsForPostIdField}
+							/>
 						))}
 					</div>
 				)}

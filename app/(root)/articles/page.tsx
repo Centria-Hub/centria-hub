@@ -25,8 +25,13 @@ const fetchArticles = async (sort: string, tags: number[]) => {
 	)
 }
 
-// Fetch tags data
-const fetchTags = async () => {
+// Fetch article_tags_for_articles data
+const fetchArticleTagsForArticle = async () => {
+	return directus.request(readItems('article_tags_for_articles'))
+}
+
+// Fetch tags_for_articles data
+const fetchTagsForArticle = async () => {
 	return directus.request(readItems('tags_for_articles'))
 }
 
@@ -57,10 +62,17 @@ const Page = () => {
 		staleTime: 1000 * 60 * 5, // 5 mins cache
 	})
 
-	// Retreive tags data using Tanstack query
-	const { data: tags = [], isLoading: isLoadingTags } = useQuery({
-		queryKey: ['tags'],
-		queryFn: fetchTags,
+	// Retreive tags_for_article data using Tanstack query
+	const { data: article_tags_for_articles = [] } = useQuery({
+		queryKey: ['article_tags_for_article'],
+		queryFn: fetchArticleTagsForArticle,
+		staleTime: 1000 * 60 * 10, //10 mins cache
+	})
+
+	// Retreive tags_for_article data using Tanstack query
+	const { data: tags_for_article = [], isLoading: isLoadingTags } = useQuery({
+		queryKey: ['tags_for_article'],
+		queryFn: fetchTagsForArticle,
 		staleTime: 1000 * 60 * 10, //10 mins cache
 	})
 
@@ -101,7 +113,7 @@ const Page = () => {
 				handleSortChange={handleSortChange}
 				selectedSort={selectedSort}
 				isLoadingTags={isLoadingTags}
-				tags={tags}
+				tags={tags_for_article}
 				handleSelectedTags={handleSelectedTags}
 				selectedTags={selectedTags}
 			/>
@@ -111,7 +123,9 @@ const Page = () => {
 				type='article'
 				isLoading={isLoadingArticles}
 				displayedItems={displayedArticles}
-				tags={tags}
+				tags_for_post={tags_for_article}
+				post_tags_for_post={article_tags_for_articles}
+				tagsForPostIdField='tags_for_articles_id'
 			/>
 
 			{/* Pagination */}

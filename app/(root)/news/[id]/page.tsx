@@ -5,33 +5,33 @@ import { readItem, readItems } from '@directus/sdk'
 import PostLayout from '@/components/PostLayout'
 import directus from '@/lib/directus'
 
-const getNewsItem = async (id: number) => {
+const fetchNewsItem = async (id: number) => {
 	try {
-		const post = await directus.request(
+		return directus.request(
 			readItem('news', id, {
 				fields: ['*'],
 			})
 		)
-
-		return post
 	} catch {
 		notFound()
 	}
 }
 
-const getTags = async () => {
-	try {
-		const data = await directus.request(readItems('tags'))
-		return data
-	} catch (error) {
-		console.error('Failed to fetch tags:', error)
-	}
+// Fetch news_tags data
+const fetchNewsTags = async () => {
+	return directus.request(readItems('news_tags'))
+}
+
+// Fetch tags data
+const fetchTags = async () => {
+	return directus.request(readItems('tags'))
 }
 
 const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 	const { id } = await params
-	const newsData = await getNewsItem(+id)
-	const tags = await getTags()
+	const newsData = await fetchNewsItem(+id)
+	const news_tags = await fetchNewsTags()
+	const tags = await fetchTags()
 
 	return (
 		<div className='mx-10 my-5 min-h-[100vh]'>
@@ -41,7 +41,9 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
 				data={newsData}
 				titleField='news_name'
 				tagIdsField='news_tags'
-				tags={tags}
+				tags_for_post={tags}
+				tagsForPostIdField='tags_id'
+				post_tags_for_post={news_tags}
 				imageField='news_image'
 				contentField='new_content'
 			/>

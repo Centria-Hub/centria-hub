@@ -25,6 +25,11 @@ const fetchNews = async (sort: string, tags: number[]) => {
 	)
 }
 
+// Fetch news_tags data
+const fetchNewsTags = async () => {
+	return directus.request(readItems('news_tags'))
+}
+
 // Fetch tags data
 const fetchTags = async () => {
 	return directus.request(readItems('tags'))
@@ -59,6 +64,13 @@ const Page = () => {
 		queryKey: ['news', selectedSort, selectedTags],
 		queryFn: () => fetchNews(selectedSort, selectedTags),
 		staleTime: 1000 * 60 * 5, // 5 mins cache
+	})
+
+	// Retreive tags data using Tanstack query
+	const { data: news_tags = [] } = useQuery({
+		queryKey: ['news_tags'],
+		queryFn: fetchNewsTags,
+		staleTime: 1000 * 60 * 10, //10 mins cache
 	})
 
 	// Retreive tags data using Tanstack query
@@ -110,12 +122,15 @@ const Page = () => {
 				handleSelectedTags={handleSelectedTags}
 				selectedTags={selectedTags}
 			/>
+
 			{/* News Cards */}
 			<DisplayItems
 				type='news'
 				isLoading={isLoadingNews}
 				displayedItems={displayedNews}
-				tags={tags}
+				tags_for_post={tags}
+				post_tags_for_post={news_tags}
+				tagsForPostIdField='tags_id'
 			/>
 
 			{/* Pagenation */}
