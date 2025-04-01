@@ -1,41 +1,14 @@
 'use client'
 
-import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Suspense, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { readItems } from '@directus/sdk'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowUpDown, Tag } from 'lucide-react'
 
-import DateFormat from '@/components/DateFormat'
-import { Badge } from '@/components/ui/badge'
-import { buttonVariants } from '@/components/ui/button'
-// Temporary implementation
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-	Pagination,
-	PaginationContent,
-	PaginationItem,
-	PaginationLink,
-	PaginationNext,
-	PaginationPrevious,
-} from '@/components/ui/pagination'
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select'
+import { DisplayItems } from '@/components/DisplayItems'
+import Filter from '@/components/Filter'
+import PaginationLayout from '@/components/PaginationLayout'
 import directus from '@/lib/directus'
 
 // Fetch article data
@@ -124,148 +97,29 @@ const Page = () => {
 	return (
 		<div className='mx-10 my-5 flex min-h-[80vh] flex-col'>
 			{/* Filter */}
-			<div className='flex flex-col gap-5 md:flex-row'>
-				{/* Sort */}
-				<div>
-					<div className='mb-3 flex flex-row gap-1'>
-						<ArrowUpDown />
-						<h1 className='font-bold'>Sort</h1>
-					</div>
-					<div className='flex flex-row gap-3'>
-						<Select onValueChange={handleSortChange} value={selectedSort}>
-							<SelectTrigger className='w-[180px]'>
-								<SelectValue placeholder='Event date' />
-							</SelectTrigger>
-							<SelectContent className='bg-white'>
-								<SelectItem value='latest' className='cursor-pointer'>
-									Latest
-								</SelectItem>
-								<SelectItem value='oldest' className='cursor-pointer'>
-									Oldest
-								</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-				</div>
-				{/* Tags */}
-				<div className=''>
-					<div className='mb-3 flex flex-row gap-1'>
-						<Tag />
-						<h1 className='font-bold'>Tags</h1>
-					</div>
-					<div className='flex flex-wrap gap-3 pb-5'>
-						{isLoadingTags ? (
-							<p>Loading...</p>
-						) : (
-							<Select>
-								<SelectTrigger className='w-[180px]'>
-									<SelectValue placeholder='Select Tags' />
-								</SelectTrigger>
-								<SelectContent className='bg-white'>
-									{tags.map(tag => (
-										<div
-											key={tag.id}
-											onClick={() => handleSelectedTags(tag.id)}
-											className='cursor-pointer'
-										>
-											<Checkbox
-												checked={selectedTags.includes(tag.id)}
-												onCheckedChange={() => handleSelectedTags(tag.id)}
-												className='mr-2'
-											/>
-											<span>{tag.name}</span>
-										</div>
-									))}
-								</SelectContent>
-							</Select>
-						)}
-					</div>
-				</div>
-			</div>
+			<Filter
+				handleSortChange={handleSortChange}
+				selectedSort={selectedSort}
+				isLoadingTags={isLoadingTags}
+				tags={tags}
+				handleSelectedTags={handleSelectedTags}
+				selectedTags={selectedTags}
+			/>
 
 			{/* Articles Cards */}
-			<Suspense>
-				{isLoadingArticles ? (
-					<p>Loading...</p>
-				) : (
-					<div className='grid grid-cols-1 gap-5'>
-						{displayedArticles.map(item => (
-							<Card key={item.id} className='flex flex-col md:flex-row'>
-								<CardHeader className='flex-1'>
-									<CardTitle>{item.title}</CardTitle>
-									<CardDescription>
-										{item.date_updated
-											? DateFormat(item.date_updated)
-											: DateFormat(item.date_created)}
-									</CardDescription>
-									<div className='flex flex-wrap gap-3'>
-										{item.article_tags?.map((tagId: number) => {
-											const tag = tags.find((t: any) => t.id === tagId)
-											return tag ? (
-												<Badge key={tag.id} variant='outline' className='w-fit'>
-													{tag.name}
-												</Badge>
-											) : null
-										})}
-									</div>
-									<p className='mt-5'>
-										{item.short_description.length > 100
-											? `${item.short_description.substring(0, 200)}...`
-											: item.short_description}
-									</p>
-									<Link
-										href={`/articles/${item.id}`}
-										className={`${buttonVariants({ variant: 'centriaRed_outline', size: 'lg' })} w-fit`}
-									>
-										Read More
-									</Link>
-								</CardHeader>
-								<CardContent className='flex items-center justify-center md:my-auto md:justify-start md:!pb-0 md:!pl-0'>
-									<Image
-										src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.article_image}`}
-										alt={item.title}
-										quality={100}
-										width={200}
-										height={133}
-										className='h-[133px] w-[200px] rounded-lg object-cover shadow-md'
-									/>
-								</CardContent>
-							</Card>
-						))}
-					</div>
-				)}
-			</Suspense>
+			<DisplayItems
+				type='article'
+				isLoading={isLoadingArticles}
+				displayedItems={displayedArticles}
+				tags={tags}
+			/>
 
-			{/* Pagenation */}
-			<Pagination className='mt-5 grow items-end'>
-				<PaginationContent>
-					<PaginationItem>
-						<PaginationPrevious
-							className={`${currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-							onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-						/>
-					</PaginationItem>
-					{/* Page Number */}
-					{[...Array(totalPages)].map((_, index) => (
-						<PaginationItem key={index} className='cursor-pointer'>
-							<PaginationLink
-								isActive={currentPage === index + 1}
-								onClick={() => setCurrentPage(index + 1)}
-							>
-								{index + 1}
-							</PaginationLink>
-						</PaginationItem>
-					))}
-					<PaginationItem>
-						<PaginationNext
-							className={`${currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-							onClick={() =>
-								setCurrentPage(prev => Math.min(prev + 1, totalPages))
-							}
-						/>
-					</PaginationItem>
-				</PaginationContent>
-			</Pagination>
+			{/* Pagination */}
+			<PaginationLayout
+				currentPage={currentPage}
+				setCurrentPage={setCurrentPage}
+				totalPages={totalPages}
+			/>
 		</div>
 	)
 }

@@ -36,9 +36,10 @@ const AddToCalender: React.FC<AddToCalenderProps> = ({
 
 	return (
 		<Button
-			variant='centriaRed'
+			variant='centriaRed_outline'
 			className='w-fit'
 			onClick={addToGoogleCalendar}
+			size='sm'
 		>
 			Add to Calender
 		</Button>
