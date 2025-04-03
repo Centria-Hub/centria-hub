@@ -23,7 +23,9 @@ interface PostLayoutProps {
 	data: Record<string, any>
 	titleField: string
 	tagIdsField: string
-	tags: Record<string, any>[] | undefined
+	tags_for_post: Record<string, any>[] | undefined
+	tagsForPostIdField: string
+	post_tags_for_post: Record<string, any>[] | undefined
 	imageField: string
 	contentField: string
 }
@@ -34,7 +36,9 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 	data,
 	titleField,
 	tagIdsField,
-	tags,
+	tags_for_post,
+	tagsForPostIdField,
+	post_tags_for_post,
 	imageField,
 	contentField,
 }) => {
@@ -65,7 +69,10 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 				</p>
 				<div className='flex flex-wrap gap-3'>
 					{data[tagIdsField]?.map((tagId: number) => {
-						const tag = tags?.find((t: any) => t.id == tagId)
+						const data = post_tags_for_post?.find((t: any) => t.id === tagId)
+						const tag = tags_for_post?.find(
+							(t: any) => t.id === data![tagsForPostIdField]
+						)
 						return tag ? (
 							<Badge key={tag.id} variant='outline' className='w-fit'>
 								{type === 'article' ? tag.name : tag.tag}

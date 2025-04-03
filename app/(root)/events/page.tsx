@@ -25,8 +25,13 @@ const fetchEvents = async (sort: string, tags: number[]) => {
 	)
 }
 
-// Fetch tags data
-const fetchTags = async () => {
+// Fetch events_tags_for_events data
+const fetchEventsTagsForEvents = async () => {
+	return directus.request(readItems('events_tags_for_events'))
+}
+
+// Fetch tags_for_events data
+const fetchTagsForEvents = async () => {
 	return directus.request(readItems('tags_for_events'))
 }
 
@@ -50,18 +55,30 @@ const Page = () => {
 		if (sortParam) setSelectedSort(sortParam)
 	}, [])
 
-	// Retreive news data using Tanstack query
-	const { data: events = [], isLoading: isLoadingEvents } = useQuery({
-		queryKey: ['events', selectedSort, selectedTags],
-		queryFn: () => fetchEvents(selectedSort, selectedTags),
-		staleTime: 1000 * 60 * 5, // 5 mins cache
+	// Retreive events_tags_for_events data using Tanstack query
+	const { data: events_tags_for_events = [] } = useQuery({
+		queryKey: ['events_tags_for_events'],
+		queryFn: fetchEventsTagsForEvents,
+		staleTime: 1000 * 60 * 10, //10 mins cache
 	})
 
-	// Retreive tags data using Tanstack query
-	const { data: tags = [], isLoading: isLoadingTags } = useQuery({
-		queryKey: ['tags'],
-		queryFn: fetchTags,
+	// Retreive tags_for_events data using Tanstack query
+	const { data: tags_for_events = [], isLoading: isLoadingTags } = useQuery({
+		queryKey: ['tags_for_events'],
+		queryFn: fetchTagsForEvents,
 		staleTime: 1000 * 60 * 10, //10 mins cache
+	})
+
+	// Map the events_tags_for_events data to get the relevant tag IDs
+	const tagIdsFromEventTags = events_tags_for_events
+		.filter((item: any) => selectedTags.includes(item.tags_for_events_id))
+		.map((item: any) => item.id)
+
+	// Retreive news data using Tanstack query
+	const { data: events = [], isLoading: isLoadingEvents } = useQuery({
+		queryKey: ['events', selectedSort, tagIdsFromEventTags],
+		queryFn: () => fetchEvents(selectedSort, tagIdsFromEventTags),
+		staleTime: 1000 * 60 * 5, // 5 mins cache
 	})
 
 	// Update URL query params
@@ -101,7 +118,7 @@ const Page = () => {
 				handleSortChange={handleSortChange}
 				selectedSort={selectedSort}
 				isLoadingTags={isLoadingTags}
-				tags={tags}
+				tags={tags_for_events}
 				handleSelectedTags={handleSelectedTags}
 				selectedTags={selectedTags}
 			/>
@@ -111,7 +128,9 @@ const Page = () => {
 				type='event'
 				isLoading={isLoadingEvents}
 				displayedItems={displayedEvents}
-				tags={tags}
+				tags_for_post={tags_for_events}
+				post_tags_for_post={events_tags_for_events}
+				tagsForPostIdField='tags_for_events_id'
 			/>
 
 			{/* Pagenation */}
