@@ -55,25 +55,30 @@ const Page = () => {
 		if (sortParam) setSelectedSort(sortParam)
 	}, [])
 
-	// Retreive articles data using Tanstack query
-	const { data: articles = [], isLoading: isLoadingArticles } = useQuery({
-		queryKey: ['articles', selectedSort, selectedTags],
-		queryFn: () => fetchArticles(selectedSort, selectedTags),
-		staleTime: 1000 * 60 * 5, // 5 mins cache
-	})
-
-	// Retreive tags_for_article data using Tanstack query
+	// Retrieve article_tags_for_articles data using Tanstack query
 	const { data: article_tags_for_articles = [] } = useQuery({
 		queryKey: ['article_tags_for_article'],
 		queryFn: fetchArticleTagsForArticle,
 		staleTime: 1000 * 60 * 10, //10 mins cache
 	})
 
-	// Retreive tags_for_article data using Tanstack query
+	// Retrieve tags_for_article data using Tanstack query
 	const { data: tags_for_article = [], isLoading: isLoadingTags } = useQuery({
 		queryKey: ['tags_for_article'],
 		queryFn: fetchTagsForArticle,
 		staleTime: 1000 * 60 * 10, //10 mins cache
+	})
+
+	// Map the article_tags_for_articles data to get the relevant tag IDs
+	const tagIdsFromArticleTags = article_tags_for_articles
+		.filter((item: any) => selectedTags.includes(item.tags_for_articles_id))
+		.map((item: any) => item.id)
+
+	// Retrieve articles data using Tanstack query
+	const { data: articles = [], isLoading: isLoadingArticles } = useQuery({
+		queryKey: ['articles', selectedSort, tagIdsFromArticleTags],
+		queryFn: () => fetchArticles(selectedSort, tagIdsFromArticleTags),
+		staleTime: 1000 * 60 * 5, // 5 mins cache
 	})
 
 	// Update URL query params
@@ -137,4 +142,5 @@ const Page = () => {
 		</div>
 	)
 }
+
 export default Page

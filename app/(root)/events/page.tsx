@@ -55,13 +55,6 @@ const Page = () => {
 		if (sortParam) setSelectedSort(sortParam)
 	}, [])
 
-	// Retreive news data using Tanstack query
-	const { data: events = [], isLoading: isLoadingEvents } = useQuery({
-		queryKey: ['events', selectedSort, selectedTags],
-		queryFn: () => fetchEvents(selectedSort, selectedTags),
-		staleTime: 1000 * 60 * 5, // 5 mins cache
-	})
-
 	// Retreive events_tags_for_events data using Tanstack query
 	const { data: events_tags_for_events = [] } = useQuery({
 		queryKey: ['events_tags_for_events'],
@@ -74,6 +67,18 @@ const Page = () => {
 		queryKey: ['tags_for_events'],
 		queryFn: fetchTagsForEvents,
 		staleTime: 1000 * 60 * 10, //10 mins cache
+	})
+
+	// Map the events_tags_for_events data to get the relevant tag IDs
+	const tagIdsFromEventTags = events_tags_for_events
+		.filter((item: any) => selectedTags.includes(item.tags_for_events_id))
+		.map((item: any) => item.id)
+
+	// Retreive news data using Tanstack query
+	const { data: events = [], isLoading: isLoadingEvents } = useQuery({
+		queryKey: ['events', selectedSort, tagIdsFromEventTags],
+		queryFn: () => fetchEvents(selectedSort, tagIdsFromEventTags),
+		staleTime: 1000 * 60 * 5, // 5 mins cache
 	})
 
 	// Update URL query params

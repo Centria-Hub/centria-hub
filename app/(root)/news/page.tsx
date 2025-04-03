@@ -59,13 +59,6 @@ const Page = () => {
 		}
 	}, [])
 
-	// Retreive news data using Tanstack query
-	const { data: news = [], isLoading: isLoadingNews } = useQuery({
-		queryKey: ['news', selectedSort, selectedTags],
-		queryFn: () => fetchNews(selectedSort, selectedTags),
-		staleTime: 1000 * 60 * 5, // 5 mins cache
-	})
-
 	// Retreive tags data using Tanstack query
 	const { data: news_tags = [] } = useQuery({
 		queryKey: ['news_tags'],
@@ -78,6 +71,17 @@ const Page = () => {
 		queryKey: ['tags'],
 		queryFn: fetchTags,
 		staleTime: 1000 * 60 * 10, //10 mins cache
+	})
+
+	// Map the news_tags data to get the relevant tag IDs
+	const tagIdsFromNewsTags = news_tags
+		.filter((item: any) => selectedTags.includes(item.tags_id))
+		.map((item: any) => item.id)
+	// Retreive news data using Tanstack query
+	const { data: news = [], isLoading: isLoadingNews } = useQuery({
+		queryKey: ['news', selectedSort, tagIdsFromNewsTags],
+		queryFn: () => fetchNews(selectedSort, tagIdsFromNewsTags),
+		staleTime: 1000 * 60 * 5, // 5 mins cache
 	})
 
 	// Update URL query params
