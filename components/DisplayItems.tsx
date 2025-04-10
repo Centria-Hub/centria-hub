@@ -17,21 +17,17 @@ import {
 const ItemCard = ({
 	type,
 	item,
-	tags_for_post,
-	post_tags_for_post,
-	tagsForPostIdField,
+	tags,
+	post_tags,
 }: {
-	type: 'news' | 'event' | 'article'
+	type: 'news' | 'events' | 'articles'
 	item: any
-	tags_for_post: any
-	post_tags_for_post: any
-	tagsForPostIdField: string
+	tags: any
+	post_tags: any
 }) => {
 	const getDate = () => {
-		if (type === 'event') {
-			return !item.end_date
-				? DateFormat(item.start_date)
-				: `${DateFormat(item.start_date)} - ${DateFormat(item.end_date)}`
+		if (type === 'events') {
+			return DateFormat(item.time)
 		}
 		return item.date_updated
 			? DateFormat(item.date_updated)
@@ -40,13 +36,11 @@ const ItemCard = ({
 
 	const renderTags = (tagIds: number[] = []) => {
 		return tagIds.map((tagId: number) => {
-			const data = post_tags_for_post.find((t: any) => t.id === tagId)
-			const tag = tags_for_post.find(
-				(t: any) => t.id === data[tagsForPostIdField]
-			)
+			const data = post_tags.find((t: any) => t.id === tagId)
+			const tag = tags.find((t: any) => t.id === data.tags_id)
 			return tag ? (
 				<Badge key={tag.id} variant='outline' className='w-fit'>
-					{type === 'article' ? tag.name : tag.tag}
+					{tag.tag}
 				</Badge>
 			) : null
 		})
@@ -58,18 +52,16 @@ const ItemCard = ({
 			: item.short_description
 	}
 
-	if (type === 'article') {
+	if (type === 'articles') {
 		return (
 			<Card key={item.id} className='flex flex-col md:flex-row'>
 				<CardHeader className='flex-1'>
 					<CardTitle>{item.title}</CardTitle>
 					<CardDescription>{getDate()}</CardDescription>
-					<div className='flex flex-wrap gap-3'>
-						{renderTags(item.article_tags)}
-					</div>
+					<div className='flex flex-wrap gap-3'>{renderTags(item.tags)}</div>
 					<p className='mt-5'>{getDescription()}</p>
 					<Link
-						href={`/articles/${item.id}`}
+						href={`/articles/${item.slug}`}
 						className={`${buttonVariants({ variant: 'centriaRed_outline', size: 'lg' })} w-fit`}
 					>
 						Read More
@@ -77,7 +69,7 @@ const ItemCard = ({
 				</CardHeader>
 				<CardContent className='flex items-center justify-center md:my-auto md:justify-start md:!pb-0 md:!pl-0'>
 					<Image
-						src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.article_image}`}
+						src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.image}`}
 						alt={item.title}
 						quality={100}
 						width={200}
@@ -88,34 +80,30 @@ const ItemCard = ({
 			</Card>
 		)
 	}
-	if (type === 'news' || type === 'event') {
+	if (type === 'news' || type === 'events') {
 		return (
 			<Card key={item.id}>
 				<CardHeader className=''>
-					<CardTitle>{type === 'news' ? item.news_name : item.title}</CardTitle>
+					<CardTitle>{item.title}</CardTitle>
 					<CardDescription>{getDate()}</CardDescription>
-					<div className='flex flex-wrap gap-3'>
-						{renderTags(type === 'news' ? item.news_tags : item.event_tags)}
-					</div>
+					<div className='flex flex-wrap gap-3'>{renderTags(item.tags)}</div>
 				</CardHeader>
 				<CardContent className='justify-content flex flex-col items-center'>
 					<Image
-						src={
-							type === 'news'
-								? `${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.news_image}`
-								: `${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.event_image}`
-						}
+						src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.image}`}
 						quality={100}
 						width={1280}
 						height={768}
-						alt={type === 'news' ? item.news_name : item.title}
+						alt={item.title}
 						className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
 					/>
 				</CardContent>
 				<CardFooter className='flex flex-col gap-5'>
 					<p className='mt-5'>{getDescription()}</p>
 					<Link
-						href={type === 'news' ? `/news/${item.id}` : `/events/${item.id}`}
+						href={
+							type === 'news' ? `/news/${item.slug}` : `/events/${item.slug}`
+						}
 						className={`${buttonVariants({ variant: 'centriaRed_outline', size: 'lg' })}`}
 					>
 						Read More
@@ -131,18 +119,16 @@ export const DisplayItems = ({
 	type,
 	isLoading,
 	displayedItems,
-	tags_for_post,
-	post_tags_for_post,
-	tagsForPostIdField,
+	tags,
+	post_tags,
 }: {
-	type: 'news' | 'event' | 'article'
+	type: 'news' | 'events' | 'articles'
 	isLoading: boolean
 	displayedItems: any[]
-	tags_for_post: any
-	post_tags_for_post: any
-	tagsForPostIdField: string
+	tags: any
+	post_tags: any
 }) => {
-	if (type === 'article') {
+	if (type === 'articles') {
 		return (
 			<Suspense>
 				{isLoading ? (
@@ -154,9 +140,8 @@ export const DisplayItems = ({
 								key={item.id}
 								type={type}
 								item={item}
-								tags_for_post={tags_for_post}
-								post_tags_for_post={post_tags_for_post}
-								tagsForPostIdField={tagsForPostIdField}
+								tags={tags}
+								post_tags={post_tags}
 							/>
 						))}
 					</div>
@@ -164,7 +149,7 @@ export const DisplayItems = ({
 			</Suspense>
 		)
 	}
-	if (type === 'news' || type === 'event') {
+	if (type === 'news' || type === 'events') {
 		return (
 			<Suspense>
 				{isLoading ? (
@@ -176,9 +161,8 @@ export const DisplayItems = ({
 								key={item.id}
 								type={type}
 								item={item}
-								tags_for_post={tags_for_post}
-								post_tags_for_post={post_tags_for_post}
-								tagsForPostIdField={tagsForPostIdField}
+								tags={tags}
+								post_tags={post_tags}
 							/>
 						))}
 					</div>

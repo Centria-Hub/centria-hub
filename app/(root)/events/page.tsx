@@ -15,24 +15,24 @@ import directus from '@/lib/directus'
 const fetchEvents = async (sort: string, tags: number[]) => {
 	const filter: any = { status: { _eq: 'published' } }
 	if (tags.length > 0) {
-		filter.event_tags = { _in: tags }
+		filter.tags = { _in: tags }
 	}
 	return directus.request(
 		readItems('events', {
 			filter,
-			sort: [`${sort == 'latest' ? '-start_date' : 'start_date'}`],
+			sort: [`${sort == 'latest' ? '-time' : 'time'}`],
 		})
 	)
 }
 
-// Fetch events_tags_for_events data
-const fetchEventsTagsForEvents = async () => {
-	return directus.request(readItems('events_tags_for_events'))
+// Fetch events_tags
+const fetchEventsTags = async () => {
+	return directus.request(readItems('events_tags'))
 }
 
-// Fetch tags_for_events data
-const fetchTagsForEvents = async () => {
-	return directus.request(readItems('tags_for_events'))
+// Fetch tags data
+const fetchTags = async () => {
+	return directus.request(readItems('tags'))
 }
 
 const Page = () => {
@@ -55,23 +55,23 @@ const Page = () => {
 		if (sortParam) setSelectedSort(sortParam)
 	}, [])
 
-	// Retreive events_tags_for_events data using Tanstack query
-	const { data: events_tags_for_events = [] } = useQuery({
-		queryKey: ['events_tags_for_events'],
-		queryFn: fetchEventsTagsForEvents,
+	// Retreive events_tags data using Tanstack query
+	const { data: events_tags = [] } = useQuery({
+		queryKey: ['events_tags'],
+		queryFn: fetchEventsTags,
 		staleTime: 1000 * 60 * 10, //10 mins cache
 	})
 
-	// Retreive tags_for_events data using Tanstack query
-	const { data: tags_for_events = [], isLoading: isLoadingTags } = useQuery({
-		queryKey: ['tags_for_events'],
-		queryFn: fetchTagsForEvents,
+	// Retreive tags data using Tanstack query
+	const { data: tags = [], isLoading: isLoadingTags } = useQuery({
+		queryKey: ['tags'],
+		queryFn: fetchTags,
 		staleTime: 1000 * 60 * 10, //10 mins cache
 	})
 
-	// Map the events_tags_for_events data to get the relevant tag IDs
-	const tagIdsFromEventTags = events_tags_for_events
-		.filter((item: any) => selectedTags.includes(item.tags_for_events_id))
+	// Map the events_tags data to get the relevant tag IDs
+	const tagIdsFromEventTags = events_tags
+		.filter((item: any) => selectedTags.includes(item.tags_id))
 		.map((item: any) => item.id)
 
 	// Retreive news data using Tanstack query
@@ -118,19 +118,18 @@ const Page = () => {
 				handleSortChange={handleSortChange}
 				selectedSort={selectedSort}
 				isLoadingTags={isLoadingTags}
-				tags={tags_for_events}
+				tags={tags}
 				handleSelectedTags={handleSelectedTags}
 				selectedTags={selectedTags}
 			/>
 
 			{/* Event Cards */}
 			<DisplayItems
-				type='event'
+				type='events'
 				isLoading={isLoadingEvents}
 				displayedItems={displayedEvents}
-				tags_for_post={tags_for_events}
-				post_tags_for_post={events_tags_for_events}
-				tagsForPostIdField='tags_for_events_id'
+				tags={tags}
+				post_tags={events_tags}
 			/>
 
 			{/* Pagenation */}

@@ -15,24 +15,24 @@ import directus from '@/lib/directus'
 const fetchArticles = async (sort: string, tags: number[]) => {
 	const filter: any = { status: { _eq: 'published' } }
 	if (tags.length > 0) {
-		filter.article_tags = { _in: tags }
+		filter.tags = { _in: tags }
 	}
 	return directus.request(
-		readItems('article', {
+		readItems('articles', {
 			filter,
 			sort: [`${sort == 'latest' ? '-date_updated' : 'date_updated'}`],
 		})
 	)
 }
 
-// Fetch article_tags_for_articles data
-const fetchArticleTagsForArticle = async () => {
-	return directus.request(readItems('article_tags_for_articles'))
+// Fetch articles_tags
+const fetchArticleTags = async () => {
+	return directus.request(readItems('articles_tags'))
 }
 
-// Fetch tags_for_articles data
-const fetchTagsForArticle = async () => {
-	return directus.request(readItems('tags_for_articles'))
+// Fetch tags
+const fetchTags = async () => {
+	return directus.request(readItems('tags'))
 }
 
 const Page = () => {
@@ -55,23 +55,23 @@ const Page = () => {
 		if (sortParam) setSelectedSort(sortParam)
 	}, [])
 
-	// Retrieve article_tags_for_articles data using Tanstack query
-	const { data: article_tags_for_articles = [] } = useQuery({
-		queryKey: ['article_tags_for_article'],
-		queryFn: fetchArticleTagsForArticle,
+	// Retrieve articles_tags using Tanstack query
+	const { data: articles_tags = [] } = useQuery({
+		queryKey: ['articles_tags'],
+		queryFn: fetchArticleTags,
 		staleTime: 1000 * 60 * 10, //10 mins cache
 	})
 
-	// Retrieve tags_for_article data using Tanstack query
-	const { data: tags_for_article = [], isLoading: isLoadingTags } = useQuery({
-		queryKey: ['tags_for_article'],
-		queryFn: fetchTagsForArticle,
+	// Retrieve tags data using Tanstack query
+	const { data: tags = [], isLoading: isLoadingTags } = useQuery({
+		queryKey: ['tags'],
+		queryFn: fetchTags,
 		staleTime: 1000 * 60 * 10, //10 mins cache
 	})
 
-	// Map the article_tags_for_articles data to get the relevant tag IDs
-	const tagIdsFromArticleTags = article_tags_for_articles
-		.filter((item: any) => selectedTags.includes(item.tags_for_articles_id))
+	// Map the articles_tags to get the relevant tag IDs
+	const tagIdsFromArticleTags = articles_tags
+		.filter((item: any) => selectedTags.includes(item.tags_id))
 		.map((item: any) => item.id)
 
 	// Retrieve articles data using Tanstack query
@@ -118,19 +118,18 @@ const Page = () => {
 				handleSortChange={handleSortChange}
 				selectedSort={selectedSort}
 				isLoadingTags={isLoadingTags}
-				tags={tags_for_article}
+				tags={tags}
 				handleSelectedTags={handleSelectedTags}
 				selectedTags={selectedTags}
 			/>
 
 			{/* Articles Cards */}
 			<DisplayItems
-				type='article'
+				type='articles'
 				isLoading={isLoadingArticles}
 				displayedItems={displayedArticles}
-				tags_for_post={tags_for_article}
-				post_tags_for_post={article_tags_for_articles}
-				tagsForPostIdField='tags_for_articles_id'
+				tags={tags}
+				post_tags={articles_tags}
 			/>
 
 			{/* Pagination */}

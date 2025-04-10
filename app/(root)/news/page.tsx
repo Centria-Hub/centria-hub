@@ -15,7 +15,7 @@ import directus from '@/lib/directus'
 const fetchNews = async (sort: string, tags: number[]) => {
 	const filter: any = { status: { _eq: 'published' } }
 	if (tags.length > 0) {
-		filter.news_tags = { _in: tags }
+		filter.tags = { _in: tags }
 	}
 	return directus.request(
 		readItems('news', {
@@ -132,9 +132,8 @@ const Page = () => {
 				type='news'
 				isLoading={isLoadingNews}
 				displayedItems={displayedNews}
-				tags_for_post={tags}
-				post_tags_for_post={news_tags}
-				tagsForPostIdField='tags_id'
+				tags={tags}
+				post_tags={news_tags}
 			/>
 
 			{/* Pagenation */}
