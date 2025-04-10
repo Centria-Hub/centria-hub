@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-import { CalendarDays, Euro, MapPin } from 'lucide-react'
+import { CalendarDays } from 'lucide-react'
 
 import BackButton from '@/components/BackButton'
 import DateFormat from '@/components/DateFormat'
@@ -15,32 +15,19 @@ import {
 } from '@/components/ui/breadcrumb'
 
 import AddToCalender from './AddToCalender'
-import OpenMapButton from './OpenMapButton'
 
 interface PostLayoutProps {
-	breadcrumbPath: string
-	type: 'news' | 'event' | 'article'
+	type: 'news' | 'events' | 'articles'
 	data: Record<string, any>
-	titleField: string
-	tagIdsField: string
-	tags_for_post: Record<string, any>[] | undefined
-	tagsForPostIdField: string
-	post_tags_for_post: Record<string, any>[] | undefined
-	imageField: string
-	contentField: string
+	tags: Record<string, any>[] | undefined
+	post_tags: Record<string, any>[] | undefined
 }
 
 const PostLayout: React.FC<PostLayoutProps> = ({
-	breadcrumbPath,
 	type,
 	data,
-	titleField,
-	tagIdsField,
-	tags_for_post,
-	tagsForPostIdField,
-	post_tags_for_post,
-	imageField,
-	contentField,
+	post_tags,
+	tags,
 }) => {
 	return (
 		<div className='mx-10 my-5 min-h-[100vh]'>
@@ -51,11 +38,11 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
-						<BreadcrumbLink href={breadcrumbPath}>{type}</BreadcrumbLink>
+						<BreadcrumbLink href={`/${type}`}>{type}</BreadcrumbLink>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
-						<BreadcrumbPage>{data[titleField]}</BreadcrumbPage>
+						<BreadcrumbPage>{data[0].title}</BreadcrumbPage>
 					</BreadcrumbItem>
 				</BreadcrumbList>
 			</Breadcrumb>
@@ -63,19 +50,17 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 			{/* Posted Date & Tags */}
 			<div className='mb-5 flex flex-col gap-3 md:flex-row md:items-center'>
 				<p className='text-sm text-gray-500'>
-					{data.date_updated
-						? DateFormat(data.date_updated)
-						: DateFormat(data.date_created)}
+					{data[0].date_updated
+						? DateFormat(data[0].date_updated)
+						: DateFormat(data[0].date_created)}
 				</p>
 				<div className='flex flex-wrap gap-3'>
-					{data[tagIdsField]?.map((tagId: number) => {
-						const data = post_tags_for_post?.find((t: any) => t.id === tagId)
-						const tag = tags_for_post?.find(
-							(t: any) => t.id === data![tagsForPostIdField]
-						)
+					{data[0].tags?.map((tagId: number) => {
+						const data = post_tags?.find((t: any) => t.id === tagId)
+						const tag = tags?.find((t: any) => t.id === data!.tags_id)
 						return tag ? (
 							<Badge key={tag.id} variant='outline' className='w-fit'>
-								{type === 'article' ? tag.name : tag.tag}
+								{tag.tag}
 							</Badge>
 						) : null
 					})}
@@ -83,60 +68,55 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 			</div>
 
 			{/* Title & Event Date & Location */}
-			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>
-				{data[titleField]}
-			</h1>
-			{type === 'event' ? (
+			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>{data[0].title}</h1>
+			{type === 'events' ? (
 				<div className='mb-5 flex flex-col gap-3'>
 					<div className='flex flex-row items-center gap-3'>
 						<CalendarDays />
 						<h1 className='text-sm font-bold md:text-xl'>
-							{!data.end_date
-								? `${DateFormat(data.start_date)}`
-								: `${DateFormat(data.start_date)} - ${DateFormat(data.end_date)}`}
+							{`${DateFormat(data[0].time)}`}
 						</h1>
 						<AddToCalender
-							title={data.title}
-							start_date={data.start_date}
-							end_date={data.end_date}
-							location_address={data.location_address}
+							title={data[0].title}
+							start_date={data[0].time}
+							end_date={data[0].time}
 						/>
 					</div>
-					<div className='flex flex-row gap-3'>
+					{/* <div className='flex flex-row gap-3'>
 						<Euro />
-						{data.is_free ? (
+						{data[0].is_free ? (
 							<h1 className='text-sm font-bold md:text-xl'>Free</h1>
 						) : (
-							<h1 className='text-sm font-bold md:text-xl'>{data.fee}</h1>
+							<h1 className='text-sm font-bold md:text-xl'>{data[0].fee}</h1>
 						)}
 					</div>
-					{data.location_address ? (
+					{data[0].location_address ? (
 						<div className='flex flex-row flex-wrap items-center gap-3 overflow-visible'>
 							<MapPin />
 							<h1 className='text-sm font-bold md:text-xl'>
-								{data.location_address}
+								{data[0].location_address}
 							</h1>
-							<OpenMapButton location_address={data.location_address} />
+							<OpenMapButton location_address={data[0].location_address} />
 						</div>
-					) : null}
+					) : null} */}
 				</div>
 			) : null}
 			{/* Description & Image & Contents */}
 			<p className='mb-5 text-xl font-semibold md:text-2xl lg:mx-40'>
-				{data.short_description}
+				{data[0].short_description}
 			</p>
 			<div className='mx-auto flex max-w-[50vw] justify-center'>
 				<Image
-					src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${data[imageField]}`}
+					src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${data[0].image}`}
 					quality={100}
 					width={1280}
 					height={768}
-					alt={data[titleField]}
+					alt={data[0].title}
 					className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
 				/>
 			</div>
 			<div
-				dangerouslySetInnerHTML={{ __html: data[contentField] }}
+				dangerouslySetInnerHTML={{ __html: data[0].content }}
 				className='mb-5 lg:mx-40 lg:text-lg'
 			/>
 			{/* Back Button */}

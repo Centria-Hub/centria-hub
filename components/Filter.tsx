@@ -76,7 +76,7 @@ const Filter = ({
 											onCheckedChange={() => handleSelectedTags(tag.id)}
 											className='mr-2'
 										/>
-										<span>{tag.tag || tag.name}</span>
+										<span>{tag.tag}</span>
 									</div>
 								))}
 							</SelectContent>
