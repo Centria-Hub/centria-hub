@@ -1,49 +1,76 @@
-// import { elysia } from '@/elysia/client'
-import Image from 'next/image'
-import Link from 'next/link'
+'use client'
 
+import Image from 'next/image'
+
+import { readItems } from '@directus/sdk'
+import { useQuery } from '@tanstack/react-query'
 import { CircleChevronDown } from 'lucide-react'
 
-import { buttonVariants } from '@/components/ui/button'
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card'
-import {
-	Carousel,
-	CarouselContent,
-	CarouselItem,
-	CarouselNext,
-	CarouselPrevious,
-} from '@/components/ui/carousel'
+import CarouselLayout from '@/components/CarouselLayout'
+import directus from '@/lib/directus'
 
-import { news } from '../data/news'
+// fetch News data
+const fetchNews = async () => {
+	return directus.request(
+		readItems('news', {
+			filter: { status: { _eq: 'published' } },
+			limit: 6,
+		})
+	)
+}
+// fetch Events data
+const fetchEvents = async () => {
+	return directus.request(
+		readItems('events', {
+			filter: { status: { _eq: 'published' } },
+			limit: 6,
+		})
+	)
+}
+// fetch Articles data
+const fetchArticles = async () => {
+	return directus.request(
+		readItems('articles', {
+			filter: { status: { _eq: 'published' } },
+			limit: 6,
+		})
+	)
+}
+export default function Home() {
+	// Fetch news, events, and articles data
+	const { data: newsData, error: newsError } = useQuery({
+		queryKey: ['news'],
+		queryFn: fetchNews,
+	})
+	const { data: eventsData, error: eventsError } = useQuery({
+		queryKey: ['events'],
+		queryFn: fetchEvents,
+	})
+	const { data: articlesData, error: articlesError } = useQuery({
+		queryKey: ['articles'],
+		queryFn: fetchArticles,
+	})
 
-export default async function Home() {
-	// const { data } = await elysia.api.index.get()
 	return (
 		<div className=''>
 			<main className=''>
 				{/* Hero section */}
 				<div className='relative h-full'>
 					<div className=''>
-						<Image
-							width={100}
-							height={80}
-							src='/hero.jpg'
-							alt='hero'
-							className='h-[70vh] w-full object-cover brightness-50'
-						/>
+						<div className='relative aspect-[1/1] w-full md:aspect-[16/9] lg:aspect-[21/9]'>
+							<Image
+								src='/hero.jpg'
+								alt='hero'
+								fill
+								className='object-cover brightness-50'
+							/>
+						</div>
 					</div>
 					<div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white'>
 						<h1 className='mb-2 text-center text-5xl font-semibold'>
 							Centria Hub
 						</h1>
-						<p className='mb-2 text-center text-lg'>
+						<p className='mb-5 text-center text-lg'>
 							A platform for all Centria news, events, and articles
 						</p>
 						<a
@@ -53,149 +80,54 @@ export default async function Home() {
 							<CircleChevronDown
 								color='#E40038'
 								size={48}
-								className='transition-transform duration-300 group-hover:scale-125'
+								className='animate-bounce transition-transform duration-1000 group-hover:scale-125'
 							/>
 						</a>
 					</div>
 				</div>
-				{/* News Section */}
-				<div id='news' className='flex flex-col items-center justify-center'>
-					<h1 className='my-20 text-center text-4xl font-semibold'>News</h1>
-					<Carousel className='mx-auto flex w-[80vw] items-center justify-center'>
-						<CarouselContent>
-							{news.map(item => (
-								<CarouselItem
-									key={item.id}
-									className='md:basis-1/2 lg:basis-1/3'
-								>
-									<Card className='h-full'>
-										<CardHeader className='h-1/3'>
-											<CardTitle>{item.title}</CardTitle>
-											<CardDescription>{item.posted_date}</CardDescription>
-										</CardHeader>
-										<CardContent className='justify-content flex h-1/3 flex-col items-center'>
-											<Image
-												src={item.thumbnail}
-												alt={item.title}
-												width={200}
-												height={200}
-												className='h-full rounded-lg object-cover shadow-md'
-											/>
-										</CardContent>
-										<CardFooter className='h-1/3'>
-											<p className='mt-5'>
-												{item.text.length > 100
-													? `${item.text.substring(0, 100)}...`
-													: item.text}
-											</p>
-										</CardFooter>
-									</Card>
-								</CarouselItem>
-							))}
-						</CarouselContent>
-						<CarouselPrevious />
-						<CarouselNext />
-					</Carousel>
-					<Link
-						href='/news'
-						className={`${buttonVariants({ variant: 'centriaRed', size: 'lg' })} my-20`}
+				<div className=''>
+					{/* News Section */}
+					<div id='news' className='flex flex-col items-center justify-center'>
+						{newsError && <p>Error loading news</p>}
+						{newsData && (
+							<CarouselLayout
+								title='News'
+								post={newsData}
+								link='/news'
+								buttonText='See all news'
+							/>
+						)}
+					</div>
+					{/* Events Section */}
+					<div
+						id='events'
+						className='flex flex-col items-center justify-center bg-gray-100'
 					>
-						More News
-					</Link>
-				</div>
-				{/* Events Section */}
-				<div
-					id='news'
-					className='flex flex-col items-center justify-center bg-gray-100'
-				>
-					<h1 className='my-20 text-center text-4xl font-semibold'>Events</h1>
-					<Carousel className='mx-auto flex w-[80vw] items-center justify-center'>
-						<CarouselContent>
-							{news.map(item => (
-								<CarouselItem
-									key={item.id}
-									className='md:basis-1/2 lg:basis-1/3'
-								>
-									<Card className='h-full bg-white'>
-										<CardHeader className='h-1/3'>
-											<CardTitle>{item.title}</CardTitle>
-											<CardDescription>{item.posted_date}</CardDescription>
-										</CardHeader>
-										<CardContent className='justify-content flex h-1/3 flex-col items-center'>
-											<Image
-												src={item.thumbnail}
-												alt={item.title}
-												width={200}
-												height={200}
-												className='h-full rounded-lg object-cover shadow-md'
-											/>
-										</CardContent>
-										<CardFooter className='h-1/3'>
-											<p className='mt-5'>
-												{item.text.length > 100
-													? `${item.text.substring(0, 100)}...`
-													: item.text}
-											</p>
-										</CardFooter>
-									</Card>
-								</CarouselItem>
-							))}
-						</CarouselContent>
-						<CarouselPrevious />
-						<CarouselNext />
-					</Carousel>
-					<Link
-						href='/events'
-						className={`${buttonVariants({ variant: 'centriaRed', size: 'lg' })} my-20`}
+						{eventsError && <p>Error loading events</p>}
+						{eventsData && (
+							<CarouselLayout
+								title='Events'
+								post={eventsData}
+								link='/events'
+								buttonText='See all events'
+							/>
+						)}
+					</div>
+					{/* Articles Section */}
+					<div
+						id='articles'
+						className='flex flex-col items-center justify-center'
 					>
-						More Events
-					</Link>
-				</div>
-
-				{/* Articles Section */}
-				<div id='news' className='flex flex-col items-center justify-center'>
-					<h1 className='my-20 text-center text-4xl font-semibold'>Articles</h1>
-					<Carousel className='mx-auto flex w-[80vw] items-center justify-center'>
-						<CarouselContent>
-							{news.map(item => (
-								<CarouselItem
-									key={item.id}
-									className='md:basis-1/2 lg:basis-1/3'
-								>
-									<Card className='h-full'>
-										<CardHeader className='h-1/3'>
-											<CardTitle>{item.title}</CardTitle>
-											<CardDescription>{item.posted_date}</CardDescription>
-										</CardHeader>
-										<CardContent className='justify-content flex h-1/3 flex-col items-center'>
-											<Image
-												src={item.thumbnail}
-												alt={item.title}
-												width={200}
-												height={200}
-												className='h-full rounded-lg object-cover shadow-md'
-											/>
-										</CardContent>
-										<CardFooter className='h-1/3'>
-											<p className='mt-5'>
-												{item.text.length > 100
-													? `${item.text.substring(0, 100)}...`
-													: item.text}
-											</p>
-										</CardFooter>
-									</Card>
-								</CarouselItem>
-							))}
-						</CarouselContent>
-						<CarouselPrevious />
-						<CarouselNext />
-					</Carousel>
-					<Link
-						href='/articles'
-						className={`${buttonVariants({ variant: 'centriaRed', size: 'lg' })} my-20`}
-					>
-						More Articles
-					</Link>
+						{articlesError && <p>Error loading articles</p>}
+						{articlesData && (
+							<CarouselLayout
+								title='Articles'
+								post={articlesData}
+								link='/articles'
+								buttonText='See all articles'
+							/>
+						)}
+					</div>
 				</div>
 			</main>
 		</div>

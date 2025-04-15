@@ -30,7 +30,7 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 	tags,
 }) => {
 	return (
-		<div className='mx-10 my-5 min-h-[100vh]'>
+		<div className='my-5 min-h-[100vh] sm:mx-10'>
 			<Breadcrumb className='mb-5'>
 				<BreadcrumbList>
 					<BreadcrumbItem>
