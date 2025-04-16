@@ -34,14 +34,12 @@ const Page = async ({ params }: { params: Promise<{ slug: string }> }) => {
 	const tags = await fetchTagsForArticle()
 
 	return (
-		<div className='mx-10 my-5 min-h-[100vh]'>
-			<PostLayout
-				type='articles'
-				data={articleData}
-				post_tags={articles_tags}
-				tags={tags}
-			/>
-		</div>
+		<PostLayout
+			type='articles'
+			data={articleData}
+			post_tags={articles_tags}
+			tags={tags}
+		/>
 	)
 }
 export default Page

@@ -4,15 +4,7 @@ import { Suspense } from 'react'
 
 import DateFormat from '@/components/DateFormat'
 import { Badge } from '@/components/ui/badge'
-import { buttonVariants } from '@/components/ui/button'
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const ItemCard = ({
 	type,
@@ -46,70 +38,44 @@ const ItemCard = ({
 		})
 	}
 
-	const getDescription = () => {
-		return item.short_description.length > 100
-			? `${item.short_description.substring(0, 200)}...`
+	const getDescription = (maxLength: number) => {
+		return item.short_description.length > maxLength
+			? `${item.short_description.substring(0, maxLength)}...`
 			: item.short_description
 	}
 
-	if (type === 'articles') {
+	if (item) {
 		return (
-			<Card key={item.id} className='flex flex-col md:flex-row'>
-				<CardHeader className='flex-1'>
-					<CardTitle>{item.title}</CardTitle>
-					<CardDescription>{getDate()}</CardDescription>
-					<div className='flex flex-wrap gap-3'>{renderTags(item.tags)}</div>
-					<p className='mt-5'>{getDescription()}</p>
-					<Link
-						href={`/articles/${item.slug}`}
-						className={`${buttonVariants({ variant: 'centriaRed_outline', size: 'lg' })} w-fit`}
-					>
-						Read More
-					</Link>
-				</CardHeader>
-				<CardContent className='flex items-center justify-center md:my-auto md:justify-start md:!pb-0 md:!pl-0'>
-					<Image
-						src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.image}`}
-						alt={item.title}
-						quality={100}
-						width={200}
-						height={133}
-						className='h-[133px] w-[200px] rounded-lg object-cover shadow-md'
-					/>
-				</CardContent>
-			</Card>
-		)
-	}
-	if (type === 'news' || type === 'events') {
-		return (
-			<Card key={item.id}>
-				<CardHeader className=''>
-					<CardTitle>{item.title}</CardTitle>
-					<CardDescription>{getDate()}</CardDescription>
-					<div className='flex flex-wrap gap-3'>{renderTags(item.tags)}</div>
-				</CardHeader>
-				<CardContent className='justify-content flex flex-col items-center'>
-					<Image
-						src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.image}`}
-						quality={100}
-						width={1280}
-						height={768}
-						alt={item.title}
-						className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
-					/>
-				</CardContent>
-				<CardFooter className='flex flex-col gap-5'>
-					<p className='mt-5'>{getDescription()}</p>
-					<Link
-						href={
-							type === 'news' ? `/news/${item.slug}` : `/events/${item.slug}`
-						}
-						className={`${buttonVariants({ variant: 'centriaRed_outline', size: 'lg' })}`}
-					>
-						Read More
-					</Link>
-				</CardFooter>
-			</Card>
+			<Link href={`/${type}/${item.slug}`} className=''>
+				<Card
+					key={item.id}
+					className='relative flex h-full w-full flex-col overflow-hidden rounded-lg shadow-md transition-transform duration-300 hover:translate-y-[-5px]'
+				>
+					<CardContent className='p-0'>
+						<div className='relative'>
+							<Image
+								src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${item.image}`}
+								alt={item.title}
+								quality={100}
+								width={1280}
+								height={768}
+								className='h-60 w-full rounded-t-lg object-cover'
+							/>
+							<div className='absolute bottom-0 left-0 right-0 h-2/5 bg-gradient-to-t from-white to-transparent'></div>
+						</div>
+					</CardContent>
+					<CardHeader className='relative z-10 -mt-16 p-5'>
+						<CardTitle>{item.title}</CardTitle>
+						<p className='mt-5 text-sm text-gray-600'>{getDate()}</p>
+						<p className='mt-5 text-sm text-gray-600'>
+							{getDescription(type === 'articles' ? 200 : 100)}
+						</p>
+						<div className='mt-5 flex flex-wrap gap-2'>
+							{renderTags(item.tags)}
+						</div>
+					</CardHeader>
+				</Card>
+			</Link>
 		)
 	}
 	return null

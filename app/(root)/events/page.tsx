@@ -119,7 +119,9 @@ const Page = () => {
 				selectedSort={selectedSort}
 				isLoadingTags={isLoadingTags}
 				tags={tags.filter((tag: any) =>
-					events_tags.some((nt: any) => nt.tags_id === tag.id)
+					events_tags.some(
+						(nt: any) => nt.events_id !== null && nt.tags_id === tag.id
+					)
 				)}
 				handleSelectedTags={handleSelectedTags}
 				selectedTags={selectedTags}

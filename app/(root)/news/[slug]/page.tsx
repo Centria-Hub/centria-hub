@@ -34,14 +34,7 @@ const Page = async ({ params }: { params: Promise<{ slug: string }> }) => {
 	const tags = await fetchTags()
 
 	return (
-		<div className='mx-10 my-5 min-h-[100vh]'>
-			<PostLayout
-				type='news'
-				data={newsData}
-				post_tags={news_tags}
-				tags={tags}
-			/>
-		</div>
+		<PostLayout type='news' data={newsData} post_tags={news_tags} tags={tags} />
 	)
 }
 
