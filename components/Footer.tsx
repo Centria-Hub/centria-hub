@@ -5,9 +5,9 @@ import { Facebook, Instagram, Linkedin, Youtube } from 'lucide-react'
 
 const Footer = () => {
 	return (
-		<footer className='grid items-center justify-center bg-centriaRed p-5 lg:grid-cols-3'>
+		<footer className='grid items-center justify-center gap-5 bg-centriaRed p-10 lg:grid-cols-3'>
 			{/* Contact Information  */}
-			<div className='mb-5 flex flex-col items-center gap-1 text-white lg:mx-auto lg:mb-0 lg:items-start'>
+			<div className='flex flex-col items-center gap-1 text-white lg:items-start'>
 				<p className='text-center text-xl font-bold text-white lg:text-start'>
 					Centria University of Applied Sciences
 				</p>
@@ -17,7 +17,7 @@ const Footer = () => {
 				<p>info@centria.fi</p>
 			</div>
 			{/* Logo and Social Media */}
-			<div className='mb-5 flex flex-col items-center justify-center gap-2 lg:mb-0'>
+			<div className='flex flex-col items-center justify-center gap-2'>
 				<Link href='/' className='flex items-center justify-center gap-2'>
 					<Image src='/logo.svg' alt='logo' width={20} height={20} />
 					<p className='text-center text-2xl font-bold text-white'>
@@ -60,7 +60,7 @@ const Footer = () => {
 				</div>
 			</div>
 			{/* Navigation Menu */}
-			<div className='flex flex-col items-center gap-3 text-white lg:mx-auto lg:items-end'>
+			<div className='flex flex-col items-center gap-3 text-white lg:items-end'>
 				<p className='text-2xl font-bold'>Contents</p>
 				<div className='flex flex-row gap-3'>
 					<Link

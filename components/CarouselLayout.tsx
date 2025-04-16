@@ -33,7 +33,7 @@ const CarouselLayout = ({
 					{post.map(item => (
 						<CarouselItem
 							key={item.id}
-							className='gap-5 md:basis-1/2 lg:basis-1/3'
+							className='gap-5 transition-transform duration-300 hover:scale-105 md:basis-1/2 lg:basis-1/3'
 						>
 							<Link href={`${link}/${item.slug}`}>
 								<Card className='relative min-h-72 w-full overflow-hidden'>

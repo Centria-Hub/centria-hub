@@ -30,7 +30,7 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 	tags,
 }) => {
 	return (
-		<div className='my-5 min-h-[100vh] sm:mx-10'>
+		<div className='m-5 min-h-[100vh]'>
 			<Breadcrumb className='mb-5'>
 				<BreadcrumbList>
 					<BreadcrumbItem>
@@ -38,7 +38,9 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
-						<BreadcrumbLink href={`/${type}`}>{type}</BreadcrumbLink>
+						<BreadcrumbLink href={`/${type}`}>
+							{type.charAt(0).toUpperCase() + type.slice(1)}
+						</BreadcrumbLink>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
@@ -48,41 +50,42 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 			</Breadcrumb>
 
 			{/* Posted Date & Tags */}
-			<div className='mb-5 flex flex-col gap-3 md:flex-row md:items-center'>
-				<p className='text-sm text-gray-500'>
-					{data[0].date_updated
-						? DateFormat(data[0].date_updated)
-						: DateFormat(data[0].date_created)}
-				</p>
-				<div className='flex flex-wrap gap-3'>
-					{data[0].tags?.map((tagId: number) => {
-						const data = post_tags?.find((t: any) => t.id === tagId)
-						const tag = tags?.find((t: any) => t.id === data!.tags_id)
-						return tag ? (
-							<Badge key={tag.id} variant='outline' className='w-fit'>
-								{tag.tag}
-							</Badge>
-						) : null
-					})}
-				</div>
-			</div>
-
-			{/* Title & Event Date & Location */}
-			<h1 className='mb-5 text-3xl font-bold md:text-5xl'>{data[0].title}</h1>
-			{type === 'events' ? (
-				<div className='mb-5 flex flex-col gap-3'>
-					<div className='flex flex-row items-center gap-3'>
-						<CalendarDays />
-						<h1 className='text-sm font-bold md:text-xl'>
-							{`${DateFormat(data[0].time)}`}
-						</h1>
-						<AddToCalender
-							title={data[0].title}
-							start_date={data[0].time}
-							end_date={data[0].time}
-						/>
+			<div className='mx-auto flex flex-col justify-center md:mx-10 lg:mx-24 xl:mx-40'>
+				<div className='mb-5 flex flex-col gap-3 md:flex-row md:items-center'>
+					<p className='text-sm text-gray-500'>
+						{data[0].date_updated
+							? DateFormat(data[0].date_updated)
+							: DateFormat(data[0].date_created)}
+					</p>
+					<div className='flex flex-wrap gap-3'>
+						{data[0].tags?.map((tagId: number) => {
+							const data = post_tags?.find((t: any) => t.id === tagId)
+							const tag = tags?.find((t: any) => t.id === data!.tags_id)
+							return tag ? (
+								<Badge key={tag.id} variant='outline' className='w-fit'>
+									{tag.tag}
+								</Badge>
+							) : null
+						})}
 					</div>
-					{/* <div className='flex flex-row gap-3'>
+				</div>
+
+				{/* Title & Event Date & Location */}
+				<h1 className='mb-5 text-3xl font-bold md:text-5xl'>{data[0].title}</h1>
+				{type === 'events' ? (
+					<div className='mb-5 flex flex-col gap-3'>
+						<div className='flex flex-row items-center gap-3'>
+							<CalendarDays />
+							<h1 className='text-sm font-bold md:text-xl'>
+								{`${DateFormat(data[0].time)}`}
+							</h1>
+							<AddToCalender
+								title={data[0].title}
+								start_date={data[0].time}
+								end_date={data[0].time}
+							/>
+						</div>
+						{/* <div className='flex flex-row gap-3'>
 						<Euro />
 						{data[0].is_free ? (
 							<h1 className='text-sm font-bold md:text-xl'>Free</h1>
@@ -99,29 +102,31 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 							<OpenMapButton location_address={data[0].location_address} />
 						</div>
 					) : null} */}
+					</div>
+				) : null}
+
+				{/* Description & Image & Contents */}
+				<p className='mb-5 text-xl font-semibold md:text-2xl'>
+					{data[0].short_description}
+				</p>
+				<div className='flex justify-center'>
+					<Image
+						src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${data[0].image}`}
+						quality={100}
+						width={1280}
+						height={768}
+						alt={data[0].title}
+						className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
+					/>
 				</div>
-			) : null}
-			{/* Description & Image & Contents */}
-			<p className='mb-5 text-xl font-semibold md:text-2xl lg:mx-40'>
-				{data[0].short_description}
-			</p>
-			<div className='mx-auto flex max-w-[50vw] justify-center'>
-				<Image
-					src={`${process.env.NEXT_PUBLIC_PUBLIC_URL}/assets/${data[0].image}`}
-					quality={100}
-					width={1280}
-					height={768}
-					alt={data[0].title}
-					className='mb-5 h-auto w-full rounded-lg object-cover shadow-md'
+				<div
+					dangerouslySetInnerHTML={{ __html: data[0].content }}
+					className='mb-5 lg:text-lg'
 				/>
-			</div>
-			<div
-				dangerouslySetInnerHTML={{ __html: data[0].content }}
-				className='mb-5 lg:mx-40 lg:text-lg'
-			/>
-			{/* Back Button */}
-			<div className='flex justify-center'>
-				<BackButton />
+				{/* Back Button */}
+				<div className='flex justify-center'>
+					<BackButton />
+				</div>
 			</div>
 		</div>
 	)
