@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, Clock, Euro, MapPin } from 'lucide-react'
 
 import BackButton from '@/components/BackButton'
 import DateFormat from '@/components/DateFormat'
@@ -73,35 +73,45 @@ const PostLayout: React.FC<PostLayoutProps> = ({
 				{/* Title & Event Date & Location */}
 				<h1 className='mb-5 text-3xl font-bold md:text-5xl'>{data[0].title}</h1>
 				{type === 'events' ? (
-					<div className='mb-5 flex flex-col gap-3'>
-						<div className='flex flex-row items-center gap-3'>
-							<CalendarDays />
-							<h1 className='text-sm font-bold md:text-xl'>
-								{`${DateFormat(data[0].time)}`}
-							</h1>
-							<AddToCalender
-								title={data[0].title}
-								start_date={data[0].time}
-								end_date={data[0].time}
-							/>
+					<div className='mb-5 flex flex-col items-start justify-between gap-4 rounded-lg bg-gray-500/10 p-5 sm:flex-row sm:items-center'>
+						<div className='flex flex-col gap-3'>
+							<div className='flex flex-col gap-2'>
+								<div className='flex items-center text-sm'>
+									<CalendarDays className='mr-2 h-4 w-4' />
+									<span>
+										{DateFormat(data[0].time)} - {DateFormat(data[0].end_time)}
+									</span>
+									<Clock className='ml-4 mr-2 h-4 w-4' />
+									<span>
+										{data[0].time
+											.split('T')[1]
+											.split(':')
+											.slice(0, 2)
+											.join(':')}{' '}
+										-{' '}
+										{data[0].end_time
+											.split('T')[1]
+											.split(':')
+											.slice(0, 2)
+											.join(':')}
+									</span>
+								</div>
+								<div className='flex items-center text-sm'>
+									<MapPin className='mr-2 h-4 w-4' />
+									<span>{data[0].location}</span>
+								</div>
+								<div className='flex items-center text-sm'>
+									<Euro className='mr-2 h-4 w-4' />
+									<span>{data[0].fee}</span>
+								</div>
+							</div>
 						</div>
-						{/* <div className='flex flex-row gap-3'>
-						<Euro />
-						{data[0].is_free ? (
-							<h1 className='text-sm font-bold md:text-xl'>Free</h1>
-						) : (
-							<h1 className='text-sm font-bold md:text-xl'>{data[0].fee}</h1>
-						)}
-					</div>
-					{data[0].location_address ? (
-						<div className='flex flex-row flex-wrap items-center gap-3 overflow-visible'>
-							<MapPin />
-							<h1 className='text-sm font-bold md:text-xl'>
-								{data[0].location_address}
-							</h1>
-							<OpenMapButton location_address={data[0].location_address} />
-						</div>
-					) : null} */}
+						<AddToCalender
+							title={data[0].title}
+							start_date={data[0].time}
+							end_date={data[0].end_time}
+							location_address={data[0].location}
+						/>
 					</div>
 				) : null}
 

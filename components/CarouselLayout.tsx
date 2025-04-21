@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { Clock, MapPin } from 'lucide-react'
+
 import { buttonVariants } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
@@ -48,14 +50,46 @@ const CarouselLayout = ({
 									<div className='absolute inset-0 z-10 bg-gradient-to-b from-black/70 via-black/30 to-transparent'></div>
 									{/* Content */}
 									<div className='relative z-20 flex h-full flex-col p-5'>
-										<div className='text-tiny font-bold uppercase text-white/60'>
-											{item.date_updated
-												? DateFormat(item.date_updated)
-												: DateFormat(item.date_created)}
-										</div>
-										<div className='text-xl font-semibold text-white'>
-											{item.title}
-										</div>
+										{title === 'Events' && (
+											<>
+												<div className='text-tiny font-bold uppercase text-white/60'>
+													{DateFormat(item.time)}
+												</div>
+												<div className='text-xl font-semibold text-white'>
+													{item.title}
+												</div>
+												<div className='mt-2 flex items-center text-xs font-semibold text-white'>
+													<Clock className='mr-1 h-3 w-3' />
+													<span className='mr-3 whitespace-nowrap'>
+														{item.time
+															.split('T')[1]
+															.split(':')
+															.slice(0, 2)
+															.join(':')}{' '}
+														-{' '}
+														{item.end_time
+															.split('T')[1]
+															.split(':')
+															.slice(0, 2)
+															.join(':')}
+													</span>
+													<MapPin className='mr-1 h-3 w-3' />
+													<span className='truncate'>{item.location}</span>
+												</div>
+											</>
+										)}
+										{title !== 'Events' && (
+											<>
+												<div className='text-tiny font-bold uppercase text-white/60'>
+													{item.date_updated
+														? DateFormat(item.date_updated)
+														: DateFormat(item.date_created)}
+												</div>
+												<div className='text-xl font-semibold text-white'>
+													{item.title}
+												</div>
+											</>
+										)}
 									</div>
 								</Card>
 							</Link>
