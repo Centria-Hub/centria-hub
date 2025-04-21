@@ -2,6 +2,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
 
+import { Clock, MapPin } from 'lucide-react'
+
 import DateFormat from '@/components/DateFormat'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,7 +21,7 @@ const ItemCard = ({
 }) => {
 	const getDate = () => {
 		if (type === 'events') {
-			return DateFormat(item.time)
+			return `${DateFormat(item.time)} - ${DateFormat(item.end_time)}`
 		}
 		return item.date_updated
 			? DateFormat(item.date_updated)
@@ -67,6 +69,17 @@ const ItemCard = ({
 					<CardHeader className='relative z-10 -mt-16 p-5'>
 						<CardTitle>{item.title}</CardTitle>
 						<p className='mt-5 text-sm text-gray-600'>{getDate()}</p>
+						{type === 'events' && (
+							<div className='flex flex-row items-center gap-2 text-sm text-gray-600'>
+								<Clock className='h-4 w-4' />
+								<span className='whitespace-nowrap'>
+									{item.time.split('T')[1].split(':').slice(0, 2).join(':')} -{' '}
+									{item.end_time.split('T')[1].split(':').slice(0, 2).join(':')}
+								</span>
+								<MapPin className='h-4 w-4' />
+								<span className='truncate'>{item.location}</span>
+							</div>
+						)}
 						<p className='mt-5 text-sm text-gray-600'>
 							{getDescription(type === 'articles' ? 200 : 100)}
 						</p>
